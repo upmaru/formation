@@ -1,4 +1,4 @@
-defmodule Formation.Alpine.Lxd.Package do
+defmodule Formation.Lxd.Alpine.Package do
   use Formation.Clients
 
   @ignored_errors [

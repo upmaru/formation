@@ -1,4 +1,4 @@
-defmodule Formation.Alpine.Lxd.Repository do
+defmodule Formation.Lxd.Alpine.Repository do
   use Formation.Clients
   
   def append(client, slug, url) do  
