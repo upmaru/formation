@@ -6,12 +6,12 @@ defmodule Formation.Lxd.Alpine.Package do
     ""
   ]
 
-  @spec add(any, map) ::
+  @spec add(%Tesla.Client{}, map) ::
           {:error, nil | binary} | {:ok, any}
   def add(
-        client,
-        %{installation: %{channel: %{package: package}}} = instance
-      ) do
+    %Tesla.Client{} = client,
+    %{installation: %{channel: %{package: package}}} = instance
+  ) do
     """
     apk update && apk add #{package.slug}
     """
@@ -21,9 +21,9 @@ defmodule Formation.Lxd.Alpine.Package do
   @spec upgrade(any, map) ::
           {:error, binary} | {:ok, any}
   def upgrade(
-        client,
-        %{installation: %{channel: %{package: package}}} = instance
-      ) do
+    %Tesla.Client{} = client,
+      %{installation: %{channel: %{package: package}}} = instance
+  ) do
     """
     apk update && apk add --upgrade #{package.slug}
     """
