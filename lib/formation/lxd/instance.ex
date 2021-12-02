@@ -1,15 +1,17 @@
 defmodule Formation.Lxd.Instance do
   use Formation.Clients
 
-  @enforce_keys [:slug, :url, :public_key, :package]
-  defstruct [:slug, :url, :public_key, :package]
+  @enforce_keys [:slug, :repository, :package]
+  defstruct [:slug, :repository, :package]
 
-  alias Formation.Lxd.Alpine.Package
+  alias Formation.Lxd.Alpine.{
+    Package,
+    Repository
+  }
 
   @type t :: %__MODULE__{
           slug: String.t(),
-          url: String.t(),
-          public_key: String.t(),
+          repository: Repository.t(),
           package: Package.t()
         }
 
@@ -24,9 +26,13 @@ defmodule Formation.Lxd.Instance do
       }) do
     %__MODULE__{
       slug: slug,
-      url: url,
-      public_key: public_key,
-      package: %Package{slug: package.slug}
+      repository: %Repository{
+        url: url,
+        public_key: public_key
+      },
+      package: %Package{
+        slug: package.slug
+      }
     }
   end
 

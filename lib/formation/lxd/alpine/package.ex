@@ -20,25 +20,25 @@ defmodule Formation.Lxd.Alpine.Package do
           {:error, nil | binary} | {:ok, any}
   def add(
         %Tesla.Client{} = client,
-        %Instance.Setup{package: package} = setup
+        %Instance{slug: slug, package: %__MODULE__{} = package}
       ) do
     command = """
     apk update && apk add #{package.slug}
     """
 
-    Lxd.execute_and_log(client, setup.slug, command, ignored_errors: @ignored_errors)
+    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors)
   end
 
   @spec upgrade(any, map) ::
           {:error, binary} | {:ok, any}
   def upgrade(
         %Tesla.Client{} = client,
-        %Instance.Setup{package: package} = setup
+        %Instance{slug: slug, package: %__MODULE__{} = package}
       ) do
     command = """
     apk update && apk add --upgrade #{package.slug}
     """
 
-    Lxd.execute_and_log(client, setup.slug, command, ignored_errors: @ignored_error)
+    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors)
   end
 end
