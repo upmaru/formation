@@ -1,30 +1,30 @@
 defmodule Formation.Lxd.Alpine.Repository do
   use Formation.Clients
-  
+
   alias Formation.Lxd
   alias Lxd.Instance
-  
-  def append(%Tesla.Client{} = client, %Instance.Setup{} = setup) do  
+
+  def append(%Tesla.Client{} = client, %Instance.Setup{} = setup) do
     command = """
     echo #{setup.url} >> /etc/apk/repositories
     """
-  
+
     Lxd.execute(client, setup.slug, command)
   end
-  
+
   def add_public_key(%Tesla.Client{} = client, %Instance.Setup{} = setup) do
     command = """
     echo '#{setup.public_key}' > /etc/apk/keys/pakman.rsa.pub
     """
-  
+
     Lxd.execute(client, setup.slug, command)
   end
-  
+
   def verify(%Tesla.Client{} = client, %Instance.Setup{} = setup) do
     command = """
     cat /etc/apk/repositories
     """
-  
+
     with {:ok, %{body: operation}} <-
            client
            |> @lexdee.execute_command(
