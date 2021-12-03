@@ -1,6 +1,11 @@
 # Formation
 
-**TODO: Add description**
+Formation is a collection of tools used to interface with primitives used to manage infrastructure.
+
+Current Support:
+
++ LXD
++ Alpine Linux
 
 ## Installation
 
