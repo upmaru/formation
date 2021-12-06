@@ -1,10 +1,10 @@
 defmodule Formation.Lxd.Instance do
-  use Formation.Clients
-
   @enforce_keys [:slug, :repository, :package]
   defstruct [:slug, :repository, :package]
 
-  alias Formation.Lxd.Alpine.{
+  alias Formation.Lxd
+
+  alias Lxd.Alpine.{
     Package,
     Repository
   }
@@ -15,7 +15,6 @@ defmodule Formation.Lxd.Instance do
           package: Package.t()
         }
 
-  use Formation.Clients
   alias Formation.Lxd.Alpine
 
   def new(%{
@@ -37,6 +36,8 @@ defmodule Formation.Lxd.Instance do
   end
 
   def setup(%Tesla.Client{} = client, %__MODULE__{} = instance) do
+    lxd = Lxd.impl()
+
     with {:ok, _add_public_key_result} <-
            Alpine.add_repository_public_key(client, instance),
          {:ok, _append_result} <-
@@ -45,9 +46,9 @@ defmodule Formation.Lxd.Instance do
            Alpine.verify_repository(client, instance),
          {:ok, add_package_output} <- Alpine.add_package(client, instance),
          {:ok, %{body: restart_operation}} <-
-           @lexdee.restart_instance(client, instance.slug),
+           lxd.restart_instance(client, instance.slug),
          {:ok, _restart_result} <-
-           @lexdee.wait_for_operation(client, restart_operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, restart_operation["id"], query: [timeout: 60]) do
       {:ok, add_package_output}
     else
       {:error, %{body: %{"error" => error}}} ->

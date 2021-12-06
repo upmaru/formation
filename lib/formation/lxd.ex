@@ -1,10 +1,10 @@
 defmodule Formation.Lxd do
-  use Formation.Clients
-
   def start(client, slug) do
-    with {:ok, %{body: operation}} <- @lexdee.start_instance(client, slug),
+    lxd = impl()
+
+    with {:ok, %{body: operation}} <- lxd.start_instance(client, slug),
          {:ok, _start_result} <-
-           @lexdee.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
       client
     else
       _ -> {:error, :instance_start_failed}
@@ -12,10 +12,12 @@ defmodule Formation.Lxd do
   end
 
   def create(%Tesla.Client{} = client, slug, instance_params) do
+    lxd = impl()
+
     with {:ok, %{body: operation}} <-
-           @lexdee.create_instance(client, instance_params, query: [target: slug]),
+           lxd.create_instance(client, instance_params, query: [target: slug]),
          {:ok, _wait_result} <-
-           @lexdee.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
       client
     else
       _ -> {:error, :instance_create_failed}
@@ -27,8 +29,10 @@ defmodule Formation.Lxd do
   """
 
   def execute(client, slug, command) do
+    lxd = impl()
+
     client
-    |> @lexdee.execute_command(
+    |> lxd.execute_command(
       slug,
       command,
       settings: %{record_output: false}
@@ -36,7 +40,7 @@ defmodule Formation.Lxd do
     |> case do
       {:ok, %{body: operation}} ->
         client
-        |> @lexdee.wait_for_operation(
+        |> lxd.wait_for_operation(
           operation["id"],
           query: [timeout: 60]
         )
@@ -51,24 +55,26 @@ defmodule Formation.Lxd do
   """
 
   def execute_and_log(client, slug, command, options \\ []) do
+    lxd = impl()
+
     with {:ok, %{body: operation}} <-
-           @lexdee.execute_command(client, slug, command),
+           lxd.execute_command(client, slug, command),
          {:ok,
           %{
             body: %{
               "metadata" => %{"output" => %{"1" => stdout, "2" => stderr}}
             }
           }} <-
-           @lexdee.wait_for_operation(client, operation["id"], query: [timeout: 60]),
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]),
          {:ok, %{body: log_output}} <-
            client
-           |> @lexdee.show_instance_log(
+           |> lxd.show_instance_log(
              slug,
              Path.basename(stdout)
            ),
          {:ok, %{body: err_output}} =
            client
-           |> @lexdee.show_instance_log(
+           |> lxd.show_instance_log(
              slug,
              Path.basename(stderr)
            ) do
@@ -91,4 +97,6 @@ defmodule Formation.Lxd do
       err in ignored_errors
     end)
   end
+
+  def impl, do: Application.get_env(:formation, :lexdee, Lexdee)
 end

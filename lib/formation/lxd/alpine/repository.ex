@@ -1,6 +1,4 @@
 defmodule Formation.Lxd.Alpine.Repository do
-  use Formation.Clients
-
   alias Formation.Lxd
   alias Lxd.Instance
 
