@@ -6,6 +6,7 @@ defmodule Formation.LxdTest do
 
   setup :verify_on_exit!
 
+  @uuid "some-operation-id"
   @instance_params %{
     "name" => "example-test-1",
     "profiles" => ["default", "example-1"],
@@ -17,30 +18,52 @@ defmodule Formation.LxdTest do
       "alias" => "alpine/3.14"
     }
   }
+  
+  setup do
+    client = Lexdee.create_client("http://localhost:1234")
+  
+    {:ok, client: client}
+  end
 
   describe "create" do
     alias Formation.Lxd
-
-    setup do
-      client = Lexdee.create_client("http://localhost:1234")
-
-      {:ok, client: client}
-    end
-
-    test "call create instance and wait", %{client: client} do
-      uuid = "some-operation-id"
-
+    
+    test "call create instance and return client", %{client: client} do
       Formation.LexdeeMock
-      |> expect(:create_instance, fn _client, _params, _options ->
-        {:ok, %{body: %{"id" => uuid}}}
+      |> expect(:create_instance, fn _client, params, _options ->
+        assert params == @instance_params
+        
+        {:ok, %{body: %{"id" => @uuid}}}
       end)
 
       Formation.LexdeeMock
-      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+      |> expect(:wait_for_operation, fn _client, uuid, _options ->
+        assert uuid == @uuid
+        
         {:ok, %{}}
       end)
 
       assert client == Lxd.create(client, "example-test-1", @instance_params)
+    end
+  end
+  
+  describe "start" do
+    alias Formation.Lxd
+    
+    test "call start instance and return client", %{client: client} do
+      Formation.LexdeeMock
+      |> expect(:start_instance, fn _client, "example-test-1" -> 
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+      
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, uuid, _options -> 
+        assert uuid == @uuid
+        
+        {:ok, %{}}
+      end)
+      
+      assert client == Lxd.start(client, "example-test-1")
     end
   end
 end
