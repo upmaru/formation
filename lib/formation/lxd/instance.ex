@@ -58,4 +58,39 @@ defmodule Formation.Lxd.Instance do
         {:error, failed_output}
     end
   end
+  
+  def stop(%Tesla.Client{} = client, %__MODULE__{slug: slug}) do
+    lxd = Lxd.impl()
+    
+    with {:ok, %{body: operation}} <-
+           lxd.stop_instance(client, slug, force: true),
+         {:ok, %{body: %{"err" => "", "status_code" => 200} = body}} <-
+           lxd.wait_for_operation(client, operation["id"],
+             query: [timeout: 60]
+           ) do
+      {:ok, body}
+    else
+      {:ok, %{body: %{"err" => "The instance is already stopped"}}} ->
+        {:ok, %{"err" => "", "status_code" => 200}}
+    
+      _ ->
+        {:error, :instance_stop_failed}
+    end  
+  end
+  
+  def delete(%Tesla.Client{} = client, %__MODULE__{slug: slug}) do
+    lxd = Lxd.impl()
+    
+    with {:ok, %{body: operation}} <-
+       lxd.delete_instance(client, slug),
+     {:ok, %{body: body}} <-
+       lxd.wait_for_operation(client, operation["id"],
+         query: [timeout: 60]
+       ) do
+      {:ok, body}
+    else
+      _ ->
+        {:error, :instance_delete_failed}
+    end  
+  end
 end
