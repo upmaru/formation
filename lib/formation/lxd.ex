@@ -1,4 +1,5 @@
 defmodule Formation.Lxd do
+  @spec start(%Tesla.Client{}, binary) :: %Tesla.Client{} | {:error, atom}
   def start(client, slug) do
     lxd = impl()
 
@@ -11,6 +12,7 @@ defmodule Formation.Lxd do
     end
   end
 
+  @spec create(%Tesla.Client{}, binary, map) :: %Tesla.Client{} | {:error, atom}
   def create(%Tesla.Client{} = client, slug, instance_params) do
     lxd = impl()
 
@@ -27,7 +29,7 @@ defmodule Formation.Lxd do
   @doc """
   Use execute to execute a command on an instance
   """
-
+  @spec execute(%Tesla.Client{}, binary, binary) :: {:ok, map} | {:error, any}
   def execute(client, slug, command) do
     lxd = impl()
 
@@ -78,7 +80,7 @@ defmodule Formation.Lxd do
              slug,
              Path.basename(stderr)
            ) do
-      if process_errors(err_output, Keyword.get(options, :ignored_errors, [])) == [] do
+      if process_errors(err_output, Keyword.get(options, :ignored_errors, [""])) == [] do
         {:ok, log_output}
       else
         {:error, err_output}
@@ -87,6 +89,9 @@ defmodule Formation.Lxd do
       {:error, error} -> {:error, error}
     end
   end
+
+  @spec impl :: atom()
+  def impl, do: Application.get_env(:formation, :lexdee, Lexdee)
 
   defp process_errors(nil, _ignored_errors), do: []
 
@@ -97,6 +102,4 @@ defmodule Formation.Lxd do
       err in ignored_errors
     end)
   end
-
-  def impl, do: Application.get_env(:formation, :lexdee, Lexdee)
 end
