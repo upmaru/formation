@@ -18,6 +18,20 @@ defmodule Formation.Lxd.InstanceTest do
 
   @uuid "some-operation-id"
 
+  setup do
+    client = Lexdee.create_client("http://localhost:1234")
+
+    instance =
+      Instance.new(%{
+        slug: "some-instance-1",
+        url: "some-url",
+        credential: %{"public_key" => "some-key"},
+        package: %{slug: "some-package-slug"}
+      })
+
+    {:ok, client: client, instance: instance}
+  end
+
   describe "new" do
     test "create new instance" do
       assert %Instance{
@@ -34,20 +48,6 @@ defmodule Formation.Lxd.InstanceTest do
   end
 
   describe "setup" do
-    setup do
-      client = Lexdee.create_client("http://localhost:1234")
-
-      instance =
-        Instance.new(%{
-          slug: "some-instance-1",
-          url: "some-url",
-          credential: %{"public_key" => "some-key"},
-          package: %{slug: "some-package-slug"}
-        })
-
-      {:ok, client: client, instance: instance}
-    end
-
     test "execute setup command", %{client: client, instance: instance} do
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
@@ -110,16 +110,16 @@ defmodule Formation.Lxd.InstanceTest do
       |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log" ->
         {:ok, %{body: ""}}
       end)
-      
+
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command ->
         assert """
                apk update && apk add some-package-slug
                """ == command
-      
+
         {:ok, %{body: %{"id" => @uuid}}}
       end)
-      
+
       Formation.LexdeeMock
       |> expect(:wait_for_operation, fn _client, _uuid, _options ->
         {:ok,
@@ -134,28 +134,60 @@ defmodule Formation.Lxd.InstanceTest do
            }
          }}
       end)
-      
+
       Formation.LexdeeMock
       |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log" ->
         {:ok, %{body: "some-package-log"}}
       end)
-      
+
       Formation.LexdeeMock
       |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log" ->
         {:ok, %{body: ""}}
       end)
-      
+
       Formation.LexdeeMock
-      |> expect(:restart_instance, fn _client, "some-instance-1" -> 
+      |> expect(:restart_instance, fn _client, "some-instance-1" ->
         {:ok, %{body: %{}}}
       end)
-      
+
       Formation.LexdeeMock
-      |> expect(:wait_for_operation, fn _client, _uuid, _options -> 
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
         {:ok, %{}}
       end)
-      
+
       assert {:ok, "some-package-log"} = Instance.setup(client, instance)
+    end
+  end
+
+  describe "stop" do
+    test "execute stop instance", %{client: client, instance: instance} do
+      Formation.LexdeeMock
+      |> expect(:stop_instance, fn _client, "some-instance-1", _options ->
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok, %{body: %{"err" => "", "status_code" => 200}}}
+      end)
+
+      assert {:ok, %{"err" => "", "status_code" => 200}} = Instance.stop(client, instance)
+    end
+  end
+
+  describe "delete" do
+    test "execute delete instance", %{client: client, instance: instance} do
+      Formation.LexdeeMock
+      |> expect(:delete_instance, fn _client, _slug ->
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok, %{body: %{}}}
+      end)
+
+      assert {:ok, %{}} = Instance.delete(client, instance)
     end
   end
 end
