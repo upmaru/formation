@@ -7,6 +7,8 @@ defmodule Formation.MixProject do
       version: "0.1.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
+      description: description(),
+      package: package(),
       deps: deps()
     ]
   end
@@ -17,12 +19,40 @@ defmodule Formation.MixProject do
       extra_applications: [:logger]
     ]
   end
+  
+  defp description do
+    """
+    Abstractions for managing infrastructural components.
+    """
+  end
+  
+  defp package do
+    [
+      name: "formation",
+      files: ~w(
+        lib 
+        priv 
+        .formatter.exs 
+        mix.exs 
+        README* 
+        readme* 
+        LICENSE*
+        license* 
+        CHANGELOG* 
+        changelog* 
+        src
+      ),
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/upmaru/formation"
+      }
+    ]
+  end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:lexdee, "~> 1.0.0"},
-      {:tesla, "~> 1.4"},
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
