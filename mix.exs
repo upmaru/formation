@@ -31,16 +31,9 @@ defmodule Formation.MixProject do
       name: "formation",
       files: ~w(
         lib 
-        priv 
         .formatter.exs 
         mix.exs 
-        README* 
-        readme* 
-        LICENSE*
-        license* 
-        CHANGELOG* 
-        changelog* 
-        src
+        README*
       ),
       licenses: ["MIT"],
       links: %{
