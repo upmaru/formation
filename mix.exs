@@ -4,7 +4,7 @@ defmodule Formation.MixProject do
   def project do
     [
       app: :formation,
-      version: "0.1.2",
+      version: "0.2.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -19,13 +19,13 @@ defmodule Formation.MixProject do
       extra_applications: [:logger]
     ]
   end
-  
+
   defp description do
     """
     Abstractions for managing infrastructural components.
     """
   end
-  
+
   defp package do
     [
       name: "formation",
@@ -49,6 +49,7 @@ defmodule Formation.MixProject do
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
       {:mox, "~> 1.0", only: :test}
     ]
   end

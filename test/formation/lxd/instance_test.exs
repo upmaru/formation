@@ -158,36 +158,4 @@ defmodule Formation.Lxd.InstanceTest do
       assert {:ok, "some-package-log"} = Instance.setup(client, instance)
     end
   end
-
-  describe "stop" do
-    test "execute stop instance", %{client: client, instance: instance} do
-      Formation.LexdeeMock
-      |> expect(:stop_instance, fn _client, "some-instance-1", _options ->
-        {:ok, %{body: %{"id" => @uuid}}}
-      end)
-
-      Formation.LexdeeMock
-      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
-        {:ok, %{body: %{"err" => "", "status_code" => 200}}}
-      end)
-
-      assert {:ok, %{"err" => "", "status_code" => 200}} = Instance.stop(client, instance)
-    end
-  end
-
-  describe "delete" do
-    test "execute delete instance", %{client: client, instance: instance} do
-      Formation.LexdeeMock
-      |> expect(:delete_instance, fn _client, _slug ->
-        {:ok, %{body: %{"id" => @uuid}}}
-      end)
-
-      Formation.LexdeeMock
-      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
-        {:ok, %{body: %{}}}
-      end)
-
-      assert {:ok, %{}} = Instance.delete(client, instance)
-    end
-  end
 end

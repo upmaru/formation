@@ -7,6 +7,7 @@ defmodule Formation.LxdTest do
   setup :verify_on_exit!
 
   @uuid "some-operation-id"
+  @slug "some-instance-1"
   @instance_params %{
     "name" => "example-test-1",
     "profiles" => ["default", "example-1"],
@@ -88,6 +89,42 @@ defmodule Formation.LxdTest do
       end)
 
       assert {:ok, %{}} == Lxd.execute(client, "example-test-1", cmd)
+    end
+  end
+
+  describe "stop" do
+    alias Formation.Lxd
+
+    test "execute stop instance", %{client: client} do
+      Formation.LexdeeMock
+      |> expect(:stop_instance, fn _client, "some-instance-1", _options ->
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok, %{body: %{"err" => "", "status_code" => 200}}}
+      end)
+
+      assert {:ok, %{"err" => "", "status_code" => 200}} = Lxd.stop(client, @slug)
+    end
+  end
+
+  describe "delete" do
+    alias Formation.Lxd
+
+    test "execute delete instance", %{client: client} do
+      Formation.LexdeeMock
+      |> expect(:delete_instance, fn _client, _slug ->
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok, %{body: %{}}}
+      end)
+
+      assert {:ok, %{}} = Lxd.delete(client, @slug)
     end
   end
 end
