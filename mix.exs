@@ -19,13 +19,13 @@ defmodule Formation.MixProject do
       extra_applications: [:logger]
     ]
   end
-  
+
   defp description do
     """
     Abstractions for managing infrastructural components.
     """
   end
-  
+
   defp package do
     [
       name: "formation",
