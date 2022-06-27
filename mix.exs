@@ -4,7 +4,7 @@ defmodule Formation.MixProject do
   def project do
     [
       app: :formation,
-      version: "0.2.0",
+      version: "0.3.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -30,9 +30,9 @@ defmodule Formation.MixProject do
     [
       name: "formation",
       files: ~w(
-        lib 
-        .formatter.exs 
-        mix.exs 
+        lib
+        .formatter.exs
+        mix.exs
         README*
       ),
       licenses: ["MIT"],
