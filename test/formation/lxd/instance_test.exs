@@ -111,6 +111,12 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok, %{body: ""}}
       end)
 
+      assert {:ok, :repository_verified} = Instance.setup(client, instance)
+    end
+  end
+
+  describe "add package and restart" do
+    test "successful execution", %{client: client, instance: instance} do
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command ->
         assert """
@@ -155,7 +161,7 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok, %{}}
       end)
 
-      assert {:ok, "some-package-log"} = Instance.setup(client, instance)
+      assert {:ok, "some-package-log"} = Instance.add_package_and_restart(client, instance)
     end
   end
 end
