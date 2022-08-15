@@ -5,7 +5,7 @@ defmodule Formation.Lxd do
 
     with {:ok, %{body: operation}} <- lxd.start_instance(client, slug),
          {:ok, _start_result} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 120]) do
       client
     else
       _ -> {:error, :instance_start_failed}
@@ -19,7 +19,7 @@ defmodule Formation.Lxd do
     with {:ok, %{body: operation}} <-
            lxd.create_instance(client, instance_params, query: [target: slug]),
          {:ok, _wait_result} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 120]) do
       client
     else
       _ -> {:error, :instance_create_failed}
@@ -32,7 +32,7 @@ defmodule Formation.Lxd do
     with {:ok, %{body: operation}} <-
            lxd.stop_instance(client, slug, force: true),
          {:ok, %{body: %{"err" => "", "status_code" => 200} = body}} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 120]) do
       {:ok, body}
     else
       {:ok, %{body: %{"err" => "The instance is already stopped"}}} ->
@@ -49,7 +49,7 @@ defmodule Formation.Lxd do
     with {:ok, %{body: operation}} <-
            lxd.delete_instance(client, slug),
          {:ok, %{body: body}} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 120]) do
       {:ok, body}
     else
       _ ->
@@ -75,7 +75,7 @@ defmodule Formation.Lxd do
         client
         |> lxd.wait_for_operation(
           operation["id"],
-          query: [timeout: 60]
+          query: [timeout: 300]
         )
 
       {:error, error} ->
@@ -98,7 +98,7 @@ defmodule Formation.Lxd do
               "metadata" => %{"output" => %{"1" => stdout, "2" => stderr}}
             }
           }} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]),
+           lxd.wait_for_operation(client, operation["id"], query: [timeout: 120]),
          {:ok, %{body: log_output}} <-
            client
            |> lxd.show_instance_log(
