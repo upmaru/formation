@@ -2,6 +2,8 @@ defmodule Formation.Lxd.Alpine.Repository do
   alias Formation.Lxd
   alias Lxd.Instance
 
+  import Formation.Utilities
+
   @enforce_keys [:url, :public_key_name, :public_key]
   defstruct [:url, :public_key_name, :public_key]
 
@@ -11,12 +13,22 @@ defmodule Formation.Lxd.Alpine.Repository do
           public_key: String.t()
         }
 
-  def new(%{url: url, public_key_name: key_name, public_key: public_key}) do
+  def new(%{
+        url: url,
+        public_key_name: key_name,
+        public_key: public_key
+      }) do
     %__MODULE__{
       url: url,
       public_key_name: key_name,
       public_key: public_key
     }
+  end
+
+  def new(params) when is_map(params) do
+    params
+    |> atomize_keys()
+    |> new()
   end
 
   def append(%Tesla.Client{} = client, %Instance{slug: slug, repositories: repositories}) do
