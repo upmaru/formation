@@ -16,9 +16,9 @@ defmodule Formation.Lxd.InstanceTest do
     Package
   }
 
-  @key_name "key-name"
-
   @uuid "some-operation-id"
+
+  @key_name "key-name"
   @repositories [
     %{
       url: "some-url",
@@ -55,7 +55,7 @@ defmodule Formation.Lxd.InstanceTest do
   end
 
   describe "setup" do
-    test "execute setup command", %{client: client, instance: instance} do
+    setup do
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
         assert """
@@ -118,12 +118,20 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok, %{body: ""}}
       end)
 
+      :ok
+    end
+
+    test "execute setup command", %{client: client, instance: instance} do
       assert {:ok, :repository_verified} = Instance.setup(client, instance)
+    end
+
+    test "execute setup using formation module", %{client: client, instance: instance} do
+      assert {:ok, :repository_verified} = Formation.setup_lxd_instance(client, instance)
     end
   end
 
   describe "add package and restart" do
-    test "successful execution", %{client: client, instance: instance} do
+    setup do
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command ->
         assert """
@@ -168,7 +176,16 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok, %{}}
       end)
 
+      :ok
+    end
+
+    test "successful execution", %{client: client, instance: instance} do
       assert {:ok, "some-package-log"} = Instance.add_package_and_restart(client, instance)
+    end
+
+    test "successful execution with formation module", %{client: client, instance: instance} do
+      assert {:ok, "some-package-log"} =
+               Formation.add_package_and_restart_lxd_instance(client, instance)
     end
   end
 end

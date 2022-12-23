@@ -2,6 +2,8 @@ defmodule Formation.Lxd.Instance do
   @enforce_keys [:slug, :repositories, :package]
   defstruct [:slug, :repositories, :package]
 
+  import Formation.Utilities
+
   alias Formation.Lxd
 
   alias Lxd.Alpine.{
@@ -25,10 +27,14 @@ defmodule Formation.Lxd.Instance do
     %__MODULE__{
       slug: slug,
       repositories: Enum.map(repositories, &Repository.new/1),
-      package: %Package{
-        slug: package.slug
-      }
+      package: Package.new(package)
     }
+  end
+
+  def new(params) when is_map(params) do
+    params
+    |> atomize_keys()
+    |> new()
   end
 
   def setup(%Tesla.Client{} = client, %__MODULE__{} = instance) do
