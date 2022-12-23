@@ -1,6 +1,6 @@
 defmodule Formation.Lxd.Instance do
-  @enforce_keys [:slug, :repository, :package]
-  defstruct [:slug, :repository, :package]
+  @enforce_keys [:slug, :repositories, :package]
+  defstruct [:slug, :repositories, :package]
 
   alias Formation.Lxd
 
@@ -11,7 +11,7 @@ defmodule Formation.Lxd.Instance do
 
   @type t :: %__MODULE__{
           slug: String.t(),
-          repository: Repository.t(),
+          repositories: list(Repository.t()),
           package: Package.t()
         }
 
@@ -19,16 +19,12 @@ defmodule Formation.Lxd.Instance do
 
   def new(%{
         slug: slug,
-        url: url,
-        credential: %{"public_key" => public_key},
+        repositories: repositories,
         package: package
       }) do
     %__MODULE__{
       slug: slug,
-      repository: %Repository{
-        url: url,
-        public_key: public_key
-      },
+      repositories: Enum.map(repositories, &Repository.new/1),
       package: %Package{
         slug: package.slug
       }

@@ -16,7 +16,16 @@ defmodule Formation.Lxd.InstanceTest do
     Package
   }
 
+  @key_name "key-name"
+
   @uuid "some-operation-id"
+  @repositories [
+    %{
+      url: "some-url",
+      public_key_name: @key_name,
+      public_key: "some-key"
+    }
+  ]
 
   setup do
     client = Lexdee.create_client("http://localhost:1234")
@@ -24,8 +33,7 @@ defmodule Formation.Lxd.InstanceTest do
     instance =
       Instance.new(%{
         slug: "some-instance-1",
-        url: "some-url",
-        credential: %{"public_key" => "some-key"},
+        repositories: @repositories,
         package: %{slug: "some-package-slug"}
       })
 
@@ -35,13 +43,12 @@ defmodule Formation.Lxd.InstanceTest do
   describe "new" do
     test "create new instance" do
       assert %Instance{
-               repository: %Repository{},
+               repositories: [%Repository{}],
                package: %Package{}
              } =
                Instance.new(%{
                  slug: "some-instance-1",
-                 url: "some-url",
-                 credential: %{"public_key" => "some-key"},
+                 repositories: @repositories,
                  package: %{slug: "some-package-slug"}
                })
     end
@@ -52,7 +59,7 @@ defmodule Formation.Lxd.InstanceTest do
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
         assert """
-               echo 'some-key' > /etc/apk/keys/pakman.rsa.pub
+               echo 'some-key' > /etc/apk/keys/#{@key_name}.rsa.pub
                """ == command
 
         {:ok, %{body: %{"id" => @uuid}}}
