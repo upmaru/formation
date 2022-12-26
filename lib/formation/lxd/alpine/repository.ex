@@ -38,7 +38,7 @@ defmodule Formation.Lxd.Alpine.Repository do
       |> Enum.join("\n")
 
     command = """
-    echo #{urls} >> /etc/apk/repositories
+    echo -e '#{urls}' >> /etc/apk/repositories
     """
 
     Lxd.execute(client, slug, command)
