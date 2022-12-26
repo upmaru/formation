@@ -73,7 +73,7 @@ defmodule Formation.Lxd.InstanceTest do
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
         assert """
-               echo some-url >> /etc/apk/repositories
+               echo -e 'some-url' >> /etc/apk/repositories
                """ == command
 
         {:ok, %{body: %{"id" => @uuid}}}
