@@ -28,10 +28,12 @@ defmodule Formation.Lxd.Alpine.Package do
           {:error, nil | binary} | {:ok, any}
   def add(
         %Tesla.Client{} = client,
-        %Instance{slug: slug, package: %__MODULE__{} = package}
+        %Instance{slug: slug, packages: packages}
       ) do
+    package_slugs = slugs(packages)
+
     command = """
-    apk update && apk add #{package.slug}
+    apk update && apk add #{package_slugs}
     """
 
     Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors)
@@ -41,12 +43,20 @@ defmodule Formation.Lxd.Alpine.Package do
           {:error, binary} | {:ok, any}
   def upgrade(
         %Tesla.Client{} = client,
-        %Instance{slug: slug, package: %__MODULE__{} = package}
+        %Instance{slug: slug, packages: packages}
       ) do
+    package_slugs = slugs(packages)
+
     command = """
-    apk update && apk add --upgrade #{package.slug}
+    apk update && apk add --upgrade #{package_slugs}
     """
 
     Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors)
+  end
+
+  defp slugs(packages) do
+    packages
+    |> Enum.map(fn package -> package.slug end)
+    |> Enum.join(" ")
   end
 end

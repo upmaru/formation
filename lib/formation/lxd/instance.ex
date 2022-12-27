@@ -1,6 +1,6 @@
 defmodule Formation.Lxd.Instance do
-  @enforce_keys [:slug, :repositories, :package]
-  defstruct [:slug, :repositories, :package]
+  @enforce_keys [:slug, :repositories, :packages]
+  defstruct [:slug, :repositories, :packages]
 
   import Formation.Utilities
 
@@ -14,7 +14,7 @@ defmodule Formation.Lxd.Instance do
   @type t :: %__MODULE__{
           slug: String.t(),
           repositories: list(Repository.t()),
-          package: Package.t()
+          packages: list(Package.t())
         }
 
   alias Formation.Lxd.Alpine
@@ -22,12 +22,12 @@ defmodule Formation.Lxd.Instance do
   def new(%{
         slug: slug,
         repositories: repositories,
-        package: package
+        packages: packages
       }) do
     %__MODULE__{
       slug: slug,
       repositories: Enum.map(repositories, &Repository.new/1),
-      package: Package.new(package)
+      packages: Enum.map(packages, &Package.new/1)
     }
   end
 
