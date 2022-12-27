@@ -34,7 +34,7 @@ defmodule Formation.Lxd.InstanceTest do
       Instance.new(%{
         slug: "some-instance-1",
         repositories: @repositories,
-        package: %{slug: "some-package-slug"}
+        packages: [%{slug: "some-package-slug"}]
       })
 
     {:ok, client: client, instance: instance}
@@ -44,12 +44,12 @@ defmodule Formation.Lxd.InstanceTest do
     test "create new instance" do
       assert %Instance{
                repositories: [%Repository{}],
-               package: %Package{}
+               packages: [%Package{}]
              } =
                Instance.new(%{
                  slug: "some-instance-1",
                  repositories: @repositories,
-                 package: %{slug: "some-package-slug"}
+                 packages: [%{slug: "some-package-slug"}]
                })
     end
   end

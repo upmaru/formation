@@ -26,7 +26,7 @@ defmodule FormationTest do
                Formation.new_lxd_instance(%{
                  slug: "some-instance-1",
                  repositories: @repositories,
-                 package: %{slug: "some-package-slug"}
+                 packages: [%{slug: "some-package-slug"}]
                })
     end
 
@@ -35,21 +35,21 @@ defmodule FormationTest do
                Formation.new_lxd_instance(%{
                  "slug" => "some-instance-1",
                  "repositories" => @repositories,
-                 "package" => %{slug: "some-package-slug"}
+                 "packages" => [%{slug: "some-package-slug"}]
                })
 
       assert %Instance{} =
                Formation.new_lxd_instance(%{
                  "slug" => "some-instance-1",
                  "repositories" => @repositories,
-                 "package" => %{"slug" => "some-package-slug"}
+                 "packages" => [%{"slug" => "some-package-slug"}]
                })
 
       assert %Instance{} =
                Formation.new_lxd_instance(%{
                  "slug" => "some-instance-1",
                  "repositories" => @repositories_string_keys,
-                 "package" => %{"slug" => "some-package-slug"}
+                 "packages" => [%{"slug" => "some-package-slug"}]
                })
     end
   end

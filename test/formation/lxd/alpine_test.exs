@@ -17,7 +17,7 @@ defmodule Formation.Lxd.AlpineTest do
       Formation.new_lxd_instance(%{
         slug: "some-instance-1",
         repositories: @repositories,
-        package: %{slug: "some-package-slug"}
+        packages: [%{slug: "some-package-slug"}]
       })
 
     {:ok, client: client, instance: instance}
