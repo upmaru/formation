@@ -38,6 +38,9 @@ defmodule Formation.Lxd do
       {:ok, %{body: %{"err" => "The instance is already stopped"}}} ->
         {:ok, %{"err" => "", "status_code" => 200}}
 
+      {:error, %{"error" => "Instance not found"} = error} ->
+        {:error, error}
+
       _ ->
         {:error, :instance_stop_failed}
     end
