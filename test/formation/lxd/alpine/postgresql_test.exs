@@ -54,4 +54,9 @@ defmodule Formation.Lxd.Alpine.PostgresqlTest do
 
     assert {:ok, _result} = Alpine.provision_postgresql(client)
   end
+
+  test "generate connection url" do
+    assert "ecto://postgres:@localhost:5432/postgres" ==
+             Alpine.postgresql_connection_url(scheme: "ecto")
+  end
 end

@@ -12,8 +12,8 @@ defmodule Formation.Lxd.Alpine.Postgresql do
     Lxd.execute_and_log(client, hostname, command)
   end
 
-  def default_connection_url(options) do
-    scheme = Keyword.get(options, :scheme)
+  def connection_url(options \\ []) do
+    scheme = Keyword.get(options, :scheme, "postgresql")
 
     "#{scheme}://postgres:@localhost:5432/postgres"
   end
