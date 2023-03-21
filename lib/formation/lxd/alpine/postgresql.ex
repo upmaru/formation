@@ -6,7 +6,7 @@ defmodule Formation.Lxd.Alpine.Postgresql do
     hostname = System.get_env("HOSTNAME")
 
     command = """
-    apk add postgresql#{version} postgresql#{version}-jit && rc-update add postgresql && rc-service postgresql start
+    apk add postgresql#{version} postgresql#{version}-jit postgresql#{version}-contrib && rc-update add postgresql && rc-service postgresql start
     """
 
     Lxd.execute_and_log(client, hostname, command)

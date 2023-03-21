@@ -15,7 +15,7 @@ defmodule Formation.Lxd.Alpine.PostgresqlTest do
   test "add postgresql", %{client: client, hostname: hostname} do
     Formation.LexdeeMock
     |> expect(:execute_command, fn _client, host, command ->
-      assert "apk add postgresql15 postgresql15-jit && rc-update add postgresql && rc-service postgresql start\n" ==
+      assert "apk add postgresql15 postgresql15-jit postgresql15-contrib && rc-update add postgresql && rc-service postgresql start\n" ==
                command
 
       assert hostname == host
