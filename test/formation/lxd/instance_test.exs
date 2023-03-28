@@ -115,12 +115,20 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: "some-url"}}
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: ""}}
       end)
 
@@ -165,12 +173,20 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: "some-package-log"}}
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: ""}}
       end)
 

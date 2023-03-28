@@ -41,14 +41,22 @@ defmodule Formation.Lxd.Alpine.PostgresqlTest do
     end)
 
     Formation.LexdeeMock
-    |> expect(:show_instance_log, fn _client, instance, "stdout.log" ->
+    |> expect(:show_instance_log, fn _client, instance, "stdout.log", options ->
+      assert [query: [project: project]] = options
+
+      assert project == "default"
+
       assert hostname == instance
 
       {:ok, %{body: "some-url"}}
     end)
 
     Formation.LexdeeMock
-    |> expect(:show_instance_log, fn _client, instance, "stderr.log" ->
+    |> expect(:show_instance_log, fn _client, instance, "stderr.log", options ->
+      assert [query: [project: project]] = options
+
+      assert project == "default"
+
       assert hostname == instance
 
       {:ok, %{body: ""}}
