@@ -1,6 +1,6 @@
 defmodule Formation.Lxd.Instance do
-  @enforce_keys [:slug, :repositories, :packages]
-  defstruct [:slug, :repositories, :packages]
+  @enforce_keys [:project, :slug, :repositories, :packages]
+  defstruct [:project, :slug, :repositories, :packages]
 
   import Formation.Utilities
 
@@ -12,6 +12,7 @@ defmodule Formation.Lxd.Instance do
   }
 
   @type t :: %__MODULE__{
+          project: String.t(),
           slug: String.t(),
           repositories: list(Repository.t()),
           packages: list(Package.t())
@@ -19,12 +20,15 @@ defmodule Formation.Lxd.Instance do
 
   alias Formation.Lxd.Alpine
 
-  def new(%{
-        slug: slug,
-        repositories: repositories,
-        packages: packages
-      }) do
+  def new(
+        %{
+          slug: slug,
+          repositories: repositories,
+          packages: packages
+        } = params
+      ) do
     %__MODULE__{
+      project: Map.get(params, :project) || "default",
       slug: slug,
       repositories: Enum.map(repositories, &Repository.new/1),
       packages: Enum.map(packages, &Package.new/1)
@@ -51,13 +55,13 @@ defmodule Formation.Lxd.Instance do
     end
   end
 
-  def add_package_and_restart(%Tesla.Client{} = client, %__MODULE__{} = instance) do
+  def add_package_and_restart(%Tesla.Client{} = client, %__MODULE__{project: project} = instance) do
     lxd = Lxd.impl()
 
     with {:ok, add_package_output} <-
            Alpine.add_package(client, instance),
          {:ok, %{body: restart_operation}} <-
-           lxd.restart_instance(client, instance.slug),
+           lxd.restart_instance(client, instance.slug, query: [project: project]),
          {:ok, _restart_result} <-
            lxd.wait_for_operation(client, restart_operation["id"], query: [timeout: Lxd.timeout()]) do
       {:ok, add_package_output}

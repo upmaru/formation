@@ -57,7 +57,9 @@ defmodule Formation.Lxd.InstanceTest do
   describe "setup" do
     setup do
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [settings: %{record_output: false}, query: [project: "default"]] == options
+
         assert """
                echo 'some-key' > /etc/apk/keys/#{@key_name}.rsa.pub
                """ == command
@@ -71,7 +73,9 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [settings: %{record_output: false}, query: [project: "default"]] == options
+
         assert """
                echo -e 'some-url' >> /etc/apk/repositories
                """ == command
@@ -85,7 +89,9 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [query: [project: "default"]] == options
+
         assert """
                cat /etc/apk/repositories
                """ == command
@@ -133,7 +139,9 @@ defmodule Formation.Lxd.InstanceTest do
   describe "add package and restart" do
     setup do
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [query: [project: "default"]] == options
+
         assert """
                apk update && apk add some-package-slug
                """ == command
@@ -167,7 +175,9 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:restart_instance, fn _client, "some-instance-1" ->
+      |> expect(:restart_instance, fn _client, "some-instance-1", options ->
+        assert [query: [project: "default"]] == options
+
         {:ok, %{body: %{}}}
       end)
 

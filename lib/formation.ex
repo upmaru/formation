@@ -4,19 +4,19 @@ defmodule Formation do
   """
   alias Formation.Lxd
 
-  defdelegate lxd_start(client, slug),
+  defdelegate lxd_start(client, slug, options \\ []),
     to: Lxd,
     as: :start
 
-  defdelegate lxd_create(client, slug, params),
+  defdelegate lxd_create(client, slug, params, options \\ []),
     to: Lxd,
     as: :create
 
-  defdelegate lxd_stop(client, slug),
+  defdelegate lxd_stop(client, slug, options \\ []),
     to: Lxd,
     as: :stop
 
-  defdelegate lxd_delete(client, slug),
+  defdelegate lxd_delete(client, slug, options \\ []),
     to: Lxd,
     as: :delete
 
