@@ -113,13 +113,15 @@ defmodule Formation.Lxd do
            client
            |> lxd.show_instance_log(
              slug,
-             Path.basename(stdout)
+             Path.basename(stdout),
+             query: [project: project]
            ),
          {:ok, %{body: err_output}} =
            client
            |> lxd.show_instance_log(
              slug,
-             Path.basename(stderr)
+             Path.basename(stderr),
+             query: [project: project]
            ) do
       if process_errors(err_output, Keyword.get(options, :ignored_errors, [""])) == [] do
         {:ok, log_output}
