@@ -13,13 +13,11 @@ defmodule Formation.Lxd.Alpine.Repository do
           public_key: String.t()
         }
 
-  def new(
-        %{
-          url: url,
-          public_key_name: key_name,
-          public_key: public_key
-        } = params
-      ) do
+  def new(%{
+        url: url,
+        public_key_name: key_name,
+        public_key: public_key
+      }) do
     %__MODULE__{
       url: url,
       public_key_name: key_name,
@@ -47,7 +45,7 @@ defmodule Formation.Lxd.Alpine.Repository do
     echo -e '#{urls}' >> /etc/apk/repositories
     """
 
-    Lxd.execute(client, slug, command, query: [project: project])
+    Lxd.execute(client, slug, command, project: project)
   end
 
   def add_public_key(%Tesla.Client{} = client, %Instance{
