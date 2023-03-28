@@ -1,9 +1,10 @@
 defmodule Formation.Lxd do
-  @spec start(%Tesla.Client{}, binary) :: %Tesla.Client{} | {:error, atom}
-  def start(client, slug) do
+  @spec start(%Tesla.Client{}, binary, Keyword.t()) :: %Tesla.Client{} | {:error, atom}
+  def start(client, slug, options \\ []) do
+    project = Keyword.get(options, :project, "default")
     lxd = impl()
 
-    with {:ok, %{body: operation}} <- lxd.start_instance(client, slug),
+    with {:ok, %{body: operation}} <- lxd.start_instance(client, slug, query: [project: project]),
          {:ok, _start_result} <-
            lxd.wait_for_operation(client, operation["id"], query: [timeout: timeout()]) do
       client
@@ -12,12 +13,13 @@ defmodule Formation.Lxd do
     end
   end
 
-  @spec create(%Tesla.Client{}, binary, map) :: %Tesla.Client{} | {:error, atom}
-  def create(%Tesla.Client{} = client, slug, instance_params) do
+  @spec create(%Tesla.Client{}, binary, map, Keyword.t()) :: %Tesla.Client{} | {:error, atom}
+  def create(%Tesla.Client{} = client, slug, instance_params, options \\ []) do
+    project = Keyword.get(options, :project, "default")
     lxd = impl()
 
     with {:ok, %{body: operation}} <-
-           lxd.create_instance(client, instance_params, query: [target: slug]),
+           lxd.create_instance(client, instance_params, query: [target: slug, project: project]),
          {:ok, _wait_result} <-
            lxd.wait_for_operation(client, operation["id"], query: [timeout: timeout()]) do
       client
@@ -26,11 +28,12 @@ defmodule Formation.Lxd do
     end
   end
 
-  def stop(%Tesla.Client{} = client, slug) do
+  def stop(%Tesla.Client{} = client, slug, options \\ []) do
+    project = Keyword.get(options, :project, "default")
     lxd = impl()
 
     with {:ok, %{body: operation}} <-
-           lxd.stop_instance(client, slug, force: true),
+           lxd.stop_instance(client, slug, force: true, query: [project: project]),
          {:ok, %{body: %{"err" => "", "status_code" => 200} = body}} <-
            lxd.wait_for_operation(client, operation["id"], query: [timeout: timeout()]) do
       {:ok, body}
@@ -46,11 +49,12 @@ defmodule Formation.Lxd do
     end
   end
 
-  def delete(%Tesla.Client{} = client, slug) do
+  def delete(%Tesla.Client{} = client, slug, options \\ []) do
+    project = Keyword.get(options, :project, "default")
     lxd = impl()
 
     with {:ok, %{body: operation}} <-
-           lxd.delete_instance(client, slug),
+           lxd.delete_instance(client, slug, query: [project: project]),
          {:ok, %{body: body}} <-
            lxd.wait_for_operation(client, operation["id"], query: [timeout: timeout()]) do
       {:ok, body}
@@ -63,15 +67,17 @@ defmodule Formation.Lxd do
   @doc """
   Use execute to execute a command on an instance
   """
-  @spec execute(%Tesla.Client{}, binary, binary) :: {:ok, map} | {:error, any}
-  def execute(client, slug, command) do
+  @spec execute(%Tesla.Client{}, binary, binary, Keyword.t()) :: {:ok, map} | {:error, any}
+  def execute(client, slug, command, options \\ []) do
+    project = Keyword.get(options, :project, "default")
     lxd = impl()
 
     client
     |> lxd.execute_command(
       slug,
       command,
-      settings: %{record_output: false}
+      settings: %{record_output: false},
+      query: [project: project]
     )
     |> case do
       {:ok, %{body: operation}} ->
@@ -91,10 +97,11 @@ defmodule Formation.Lxd do
   """
 
   def execute_and_log(client, slug, command, options \\ []) do
+    project = Keyword.get(options, :project, "default")
     lxd = impl()
 
     with {:ok, %{body: operation}} <-
-           lxd.execute_command(client, slug, command),
+           lxd.execute_command(client, slug, command, query: [project: project]),
          {:ok,
           %{
             body: %{

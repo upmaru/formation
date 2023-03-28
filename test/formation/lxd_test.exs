@@ -53,7 +53,7 @@ defmodule Formation.LxdTest do
 
     test "call start instance and return client", %{client: client} do
       Formation.LexdeeMock
-      |> expect(:start_instance, fn _client, "example-test-1" ->
+      |> expect(:start_instance, fn _client, "example-test-1", _options ->
         {:ok, %{body: %{"id" => @uuid}}}
       end)
 
@@ -115,7 +115,7 @@ defmodule Formation.LxdTest do
 
     test "execute delete instance", %{client: client} do
       Formation.LexdeeMock
-      |> expect(:delete_instance, fn _client, _slug ->
+      |> expect(:delete_instance, fn _client, _slug, _options ->
         {:ok, %{body: %{"id" => @uuid}}}
       end)
 

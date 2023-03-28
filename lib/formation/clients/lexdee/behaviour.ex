@@ -3,7 +3,6 @@ defmodule Formation.Clients.Lexdee.Behaviour do
               {:ok, binary} | {:error, any}
   @callback show_instance_log(%Tesla.Client{}, binary, binary, Keyword.t()) ::
               {:ok, binary} | {:error, any}
-
   @callback execute_command(%Tesla.Client{}, binary, binary) ::
               {:ok, any} | {:error, any}
   @callback execute_command(%Tesla.Client{}, binary, binary, Keyword.t()) ::
@@ -16,10 +15,11 @@ defmodule Formation.Clients.Lexdee.Behaviour do
   @callback create_instance(%Tesla.Client{}, map, Keyword.t()) ::
               {:ok, map} | {:error, map}
 
-  @callback delete_instance(%Tesla.Client{}, binary) :: {:ok, any} | {:error, any}
+  @callback delete_instance(%Tesla.Client{}, binary, Keyword.t()) :: {:ok, any} | {:error, any}
 
-  @callback start_instance(%Tesla.Client{}, binary) :: {:ok, any} | {:error, any}
+  @callback start_instance(%Tesla.Client{}, binary, Keyword.t()) :: {:ok, any} | {:error, any}
   @callback restart_instance(%Tesla.Client{}, binary) :: {:ok, any} | {:error, any}
+  @callback restart_instance(%Tesla.Client{}, binary, Keyword.t()) :: {:ok, any} | {:error, any}
   @callback stop_instance(%Tesla.Client{}, binary, keyword) :: {:ok, any} | {:error, any}
 
   @callback get_cluster_members(%Tesla.Client{}) :: {:ok, list}

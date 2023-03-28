@@ -13,11 +13,13 @@ defmodule Formation.Lxd.Alpine.Repository do
           public_key: String.t()
         }
 
-  def new(%{
-        url: url,
-        public_key_name: key_name,
-        public_key: public_key
-      }) do
+  def new(
+        %{
+          url: url,
+          public_key_name: key_name,
+          public_key: public_key
+        } = params
+      ) do
     %__MODULE__{
       url: url,
       public_key_name: key_name,
@@ -31,7 +33,11 @@ defmodule Formation.Lxd.Alpine.Repository do
     |> new()
   end
 
-  def append(%Tesla.Client{} = client, %Instance{slug: slug, repositories: repositories}) do
+  def append(%Tesla.Client{} = client, %Instance{
+        slug: slug,
+        repositories: repositories,
+        project: project
+      }) do
     urls =
       repositories
       |> Enum.map(fn repository -> repository.url end)
@@ -41,21 +47,29 @@ defmodule Formation.Lxd.Alpine.Repository do
     echo -e '#{urls}' >> /etc/apk/repositories
     """
 
-    Lxd.execute(client, slug, command)
+    Lxd.execute(client, slug, command, query: [project: project])
   end
 
-  def add_public_key(%Tesla.Client{} = client, %Instance{slug: slug, repositories: repositories}) do
+  def add_public_key(%Tesla.Client{} = client, %Instance{
+        slug: slug,
+        repositories: repositories,
+        project: project
+      }) do
     {:ok,
      Enum.map(repositories, fn repository ->
        command = """
        echo '#{repository.public_key}' > /etc/apk/keys/#{repository.public_key_name}.rsa.pub
        """
 
-       Lxd.execute(client, slug, command)
+       Lxd.execute(client, slug, command, project: project)
      end)}
   end
 
-  def verify(%Tesla.Client{} = client, %Instance{slug: slug, repositories: repositories}) do
+  def verify(%Tesla.Client{} = client, %Instance{
+        slug: slug,
+        repositories: repositories,
+        project: project
+      }) do
     command = """
     cat /etc/apk/repositories
     """
@@ -66,7 +80,7 @@ defmodule Formation.Lxd.Alpine.Repository do
       |> Enum.join("\n")
 
     client
-    |> Lxd.execute_and_log(slug, command)
+    |> Lxd.execute_and_log(slug, command, project: project)
     |> case do
       {:ok, log_output} ->
         if log_output =~ urls do

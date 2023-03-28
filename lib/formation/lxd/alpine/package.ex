@@ -28,7 +28,7 @@ defmodule Formation.Lxd.Alpine.Package do
           {:error, nil | binary} | {:ok, any}
   def add(
         %Tesla.Client{} = client,
-        %Instance{slug: slug, packages: packages}
+        %Instance{slug: slug, packages: packages, project: project}
       ) do
     package_slugs = slugs(packages)
 
@@ -36,14 +36,14 @@ defmodule Formation.Lxd.Alpine.Package do
     apk update && apk add #{package_slugs}
     """
 
-    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors)
+    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors, project: project)
   end
 
   @spec upgrade(any, map) ::
           {:error, binary} | {:ok, any}
   def upgrade(
         %Tesla.Client{} = client,
-        %Instance{slug: slug, packages: packages}
+        %Instance{slug: slug, packages: packages, project: project}
       ) do
     package_slugs = slugs(packages)
 
@@ -51,7 +51,7 @@ defmodule Formation.Lxd.Alpine.Package do
     apk update && apk add --upgrade #{package_slugs}
     """
 
-    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors)
+    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors, project: project)
   end
 
   defp slugs(packages) do
