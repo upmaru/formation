@@ -4,17 +4,17 @@ defmodule Formation.Postgresql.Credential do
 
   @primary_key false
   embedded_schema do
-    field(:host, :string)
-    field(:port, :integer)
-    field(:username, :string)
-    field(:password, :string)
-    field(:database, :string)
+    field :host, :string
+    field :port, :integer
+    field :username, :string
+    field :password, :string
+    field :database, :string
   end
 
   def changeset(credential, params) do
     credential
     |> cast(params, [:host, :port, :username, :password, :database])
-    |> validate_required([:host, :port, :username, :password, :database])
+    |> validate_required([:host, :port, :username, :password])
   end
 
   def create(params) do
