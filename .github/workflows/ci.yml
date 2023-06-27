@@ -8,6 +8,18 @@ jobs:
   build:
     runs-on: ubuntu-20.04
 
+    services:
+      postgres:
+        image: postgres:15.3
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - uses: actions/checkout@v2
       - name: Setup elixir
@@ -19,3 +31,10 @@ jobs:
         run: mix deps.get
       - name: Run Tests
         run: mix test
+        env:
+          FORMATION_PG_HOST: postgres
+          FORMATION_PG_USERNAME: postgres
+          FORMATION_PG_PASSWORD: postgres
+          FORMATION_PG_PORT: ${{ job.services.postgres.ports[5432] }}
+
+
