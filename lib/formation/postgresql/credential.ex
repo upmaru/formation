@@ -14,7 +14,7 @@ defmodule Formation.Postgresql.Credential do
   def changeset(credential, params) do
     credential
     |> cast(params, [:host, :port, :username, :password, :database])
-    |> validate_required([:host, :port, :username, :password])
+    |> validate_required([:host, :port, :username])
   end
 
   def create(params) do
