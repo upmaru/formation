@@ -4,7 +4,7 @@ defmodule Formation.MixProject do
   def project do
     [
       app: :formation,
-      version: "0.9.3",
+      version: "0.10.0",
       elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -46,6 +46,8 @@ defmodule Formation.MixProject do
   defp deps do
     [
       {:lexdee, ">= 2.0.0"},
+      {:postgrex, "~> 0.17.1"},
+      {:ecto, "~> 3.10"},
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
