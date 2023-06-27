@@ -11,12 +11,6 @@ defmodule Formation.PostgresqlTest do
     username = System.get_env("FORMATION_PG_USER", "postgres")
     password = System.get_env("FORMATION_PG_PASSWORD", "postgres")
 
-    IO.inspect(host)
-    IO.inspect(port)
-    IO.inspect(username)
-    IO.inspect(password)
-
-
     {:ok, host: host, port: port, username: username, password: password}
   end
 

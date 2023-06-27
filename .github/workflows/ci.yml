@@ -32,6 +32,8 @@ jobs:
       - name: Run Tests
         run: mix test
         env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: ${{ job.services.postgres.ports[5432] }}
           FORMATION_PG_HOST: postgres
           FORMATION_PG_USER: postgres
           FORMATION_PG_PASSWORD: postgres
