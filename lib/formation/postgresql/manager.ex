@@ -2,7 +2,9 @@ defmodule Formation.Postgresql.Manager do
   alias Formation.Postgresql
   alias Formation.Postgresql.Credential
 
-  def create_user_and_database(%Credential{hostname: host, port: port} = credential) do
+  def create_user_and_database(
+        %Credential{hostname: host, port: port, username: username} = credential
+      ) do
     {:ok, pid} =
       credential
       |> Map.from_struct()
@@ -32,6 +34,7 @@ defmodule Formation.Postgresql.Manager do
     alias Formation.Postgresql
 
     with {:ok, %Postgrex.Result{}} <- Postgresql.create_user(pid, new_user, new_password),
+         {:ok, %Postgrex.Result{}} <- Postgresql.grant_role_to_user(pid, new_user, username),
          {:ok, %Postgrex.Result{}} <- Postgresql.create_database(pid, database, new_user),
          {:ok, credential} <-
            Credential.create(%{
