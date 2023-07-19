@@ -1,10 +1,4 @@
 defmodule Formation.Postgresql do
-  alias __MODULE__.Client
-
-  defdelegate new_client(host, port, username, password, database \\ "postgres"),
-    to: Client,
-    as: :new
-
   alias __MODULE__.User
 
   defdelegate create_user(pid, username, password),
@@ -23,7 +17,7 @@ defmodule Formation.Postgresql do
 
   alias __MODULE__.Manager
 
-  defdelegate create_user_and_database(host, port, username, password),
+  defdelegate create_user_and_database(credential),
     to: Manager
 
   alias __MODULE__.Credential
