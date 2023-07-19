@@ -1,8 +1,14 @@
 defmodule Formation.Postgresql.Manager do
   alias Formation.Postgresql
+  alias Formation.Postgresql.Credential
 
-  def create_user_and_database(host, port, username, password) do
-    {:ok, pid} = Postgresql.new_client(host, port, username, password)
+  def create_user_and_database(%Credential{hostname: host, port: port} = credential) do
+    {:ok, pid} =
+      credential
+      |> Map.from_struct()
+      |> Keyword.new()
+      |> Postgrex.start_link()
+
     uuid = Ecto.UUID.generate()
 
     new_user =
@@ -28,8 +34,8 @@ defmodule Formation.Postgresql.Manager do
     with {:ok, %Postgrex.Result{}} <- Postgresql.create_user(pid, new_user, new_password),
          {:ok, %Postgrex.Result{}} <- Postgresql.create_database(pid, database, new_user),
          {:ok, credential} <-
-           Postgresql.Credential.create(%{
-             host: host,
+           Credential.create(%{
+             hostname: host,
              port: port,
              username: new_user,
              password: new_password,

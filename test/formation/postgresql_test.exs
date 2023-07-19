@@ -21,8 +21,16 @@ defmodule Formation.PostgresqlTest do
       username: username,
       password: password
     } do
-      assert {:ok, credential} =
-               Postgresql.create_user_and_database(host, port, username, password)
+      {:ok, credential} =
+        Credential.create(%{
+          host: host,
+          port: port,
+          username: username,
+          password: password,
+          ssl: false
+        })
+
+      assert {:ok, credential} = Postgresql.create_user_and_database(credential)
 
       assert %Credential{} = credential
     end
