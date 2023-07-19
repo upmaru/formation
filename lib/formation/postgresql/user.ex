@@ -8,6 +8,10 @@ defmodule Formation.Postgresql.User do
   end
 
   def grant_all(pid, username, database) do
-    Postgrex.query(pid, "GRANT ALL PRIVILEGES ON DATABASE '#{database}' TO #{username}", [])
+    Postgrex.query(pid, "GRANT ALL PRIVILEGES ON DATABASE #{database} TO #{username}", [])
+  end
+
+  def grant_public_schema(pid, username) do
+    Postgrex.query(pid, "GRANT ALL ON SCHEMA public TO #{username}", [])
   end
 end
