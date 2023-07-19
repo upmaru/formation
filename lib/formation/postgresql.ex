@@ -1,6 +1,10 @@
 defmodule Formation.Postgresql do
   alias __MODULE__.User
 
+  defdelegate grant_role_to_user(pid, new_user, master_user),
+    to: User,
+    as: :grant_role
+
   defdelegate create_user(pid, username, password),
     to: User,
     as: :create
