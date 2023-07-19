@@ -3,9 +3,10 @@ defmodule Formation.Postgresql.Manager do
   alias Formation.Postgresql.Credential
 
   def create_user_and_database(
-        %Credential{hostname: host, port: port, username: username} = credential
+        %Credential{hostname: host, port: port, username: username, password: password} =
+          credential
       ) do
-    {:ok, pid} =
+    {:ok, conn} =
       credential
       |> Map.from_struct()
       |> Keyword.new()
@@ -24,26 +25,38 @@ defmodule Formation.Postgresql.Manager do
       :crypto.strong_rand_bytes(12)
       |> Base.url_encode64()
 
-    database =
+    new_database =
       uuid
       |> String.split("-")
       |> List.last()
 
-    database = "db_#{database}"
+    new_database = "db_#{new_database}"
 
     alias Formation.Postgresql
 
-    with {:ok, %Postgrex.Result{}} <- Postgresql.create_user(pid, new_user, new_password),
-         {:ok, %Postgrex.Result{}} <- Postgresql.grant_role_to_user(pid, new_user, username),
-         {:ok, %Postgrex.Result{}} <- Postgresql.create_database(pid, database, new_user),
+    with {:ok, %Postgrex.Result{}} <- Postgresql.create_user(conn, new_user, new_password),
+         {:ok, %Postgrex.Result{}} <- Postgresql.grant_role_to_user(conn, new_user, username),
+         {:ok, %Postgrex.Result{}} <- Postgresql.create_database(conn, new_database, new_user),
+         {:ok, new_db_conn} <-
+           Postgrex.start_link(
+             hostname: host,
+             port: port,
+             database: new_database,
+             username: username,
+             password: password
+           ),
+         {:ok, %Postgrex.Result{}} <- Postgresql.grant_public_schema(new_db_conn, new_user),
          {:ok, credential} <-
            Credential.create(%{
              hostname: host,
              port: port,
              username: new_user,
              password: new_password,
-             database: database
+             database: new_database
            }) do
+      GenServer.stop(conn)
+      GenServer.stop(new_db_conn)
+
       {:ok, credential}
     end
   end

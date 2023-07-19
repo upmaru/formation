@@ -13,6 +13,10 @@ defmodule Formation.Postgresql do
     to: User,
     as: :grant_all
 
+  defdelegate grant_public_schema(pid, username),
+    to: User,
+    as: :grant_public_schema
+
   alias __MODULE__.Database
 
   defdelegate create_database(pid, name, username),
