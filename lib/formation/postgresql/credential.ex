@@ -17,6 +17,7 @@ defmodule Formation.Postgresql.Credential do
   embedded_schema do
     field :host, :string, virtual: true
     field :resource, :string, virtual: true
+    field :secure, :string, virtual: true
 
     field :port, :integer, default: 5432
     field :hostname, :string
@@ -31,6 +32,7 @@ defmodule Formation.Postgresql.Credential do
     |> cast(params, @valid_attrs)
     |> maybe_set_hostname()
     |> maybe_set_database()
+    |> maybe_set_ssl()
     |> validate_required([:hostname, :port, :username, :database])
   end
 
@@ -49,6 +51,14 @@ defmodule Formation.Postgresql.Credential do
       userinfo: "#{credential.username}:#{credential.password}"
     }
     |> to_string()
+  end
+
+  defp maybe_set_ssl(changeset) do
+    if secure = get_change(changeset, :secure) do
+      put_change(changeset, :ssl, secure)
+    else
+      changeset
+    end
   end
 
   defp maybe_set_database(changeset) do
