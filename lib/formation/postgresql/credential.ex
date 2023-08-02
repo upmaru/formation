@@ -2,9 +2,21 @@ defmodule Formation.Postgresql.Credential do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @valid_attrs ~w(
+    host
+    resource
+    port
+    hostname
+    username
+    password
+    database
+    ssl
+  )a
+
   @primary_key false
   embedded_schema do
     field :host, :string, virtual: true
+    field :resource, :string, virtual: true
 
     field :port, :integer, default: 5432
     field :hostname, :string
@@ -16,8 +28,9 @@ defmodule Formation.Postgresql.Credential do
 
   def changeset(credential, params) do
     credential
-    |> cast(params, [:host, :hostname, :port, :username, :password, :database, :ssl])
+    |> cast(params, @valid_attrs)
     |> maybe_set_hostname()
+    |> maybe_set_database()
     |> validate_required([:hostname, :port, :username, :database])
   end
 
@@ -36,6 +49,14 @@ defmodule Formation.Postgresql.Credential do
       userinfo: "#{credential.username}:#{credential.password}"
     }
     |> to_string()
+  end
+
+  defp maybe_set_database(changeset) do
+    if resource = get_change(changeset, :resource) do
+      put_change(changeset, :database, resource)
+    else
+      changeset
+    end
   end
 
   defp maybe_set_hostname(changeset) do

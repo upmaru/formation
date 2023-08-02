@@ -6,6 +6,7 @@ Current Support:
 
 + LXD
 + Alpine Linux
++ PostgreSQL
 
 ## Installation
 
