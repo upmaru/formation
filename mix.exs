@@ -45,11 +45,9 @@ defmodule Formation.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:grpc, "~> 0.6"},
       {:lexdee, "~> 2.3"},
       {:postgrex, "~> 0.17.1"},
       {:ecto, "~> 3.10"},
-
       {:gun, "~> 2.0", override: true},
       {:mint, "~> 1.5", override: true},
       # {:dep_from_hexpm, "~> 0.3.0"},
