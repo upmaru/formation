@@ -92,6 +92,36 @@ defmodule Formation.LxdTest do
     end
   end
 
+  describe "execute_and_log" do
+    alias Formation.Lxd
+
+    test "call with error", %{client: client} do
+      cmd = """
+      cat /var/lib/something
+      """
+
+      Formation.LexdeeMock
+      |> expect(:execute_command, fn _client, "example-test-1", command, _options ->
+        assert cmd == command
+
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok,
+         %{
+           body: %{
+             "status_code" => 400,
+             "err" => "Failed to retrieve PID of executing child process"
+           }
+         }}
+      end)
+
+      assert {:error, _error} = Lxd.execute_and_log(client, "example-test-1", cmd)
+    end
+  end
+
   describe "stop" do
     alias Formation.Lxd
 

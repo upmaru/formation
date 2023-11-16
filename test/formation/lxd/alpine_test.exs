@@ -39,6 +39,7 @@ defmodule Formation.Lxd.AlpineTest do
         {:ok,
          %{
            body: %{
+             "status_code" => 200,
              "metadata" => %{
                "output" => %{
                  "1" => "stdout.log",

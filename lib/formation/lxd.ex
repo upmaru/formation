@@ -129,7 +129,14 @@ defmodule Formation.Lxd do
         {:error, err_output}
       end
     else
-      {:error, error} -> {:error, error}
+      {:ok, %{body: %{"error_code" => error_code} = error}} when error_code >= 400 ->
+        {:error, error}
+
+      {:ok, %{body: %{"status_code" => status_code} = error}} when status_code >= 400 ->
+        {:error, error}
+
+      {:error, error} ->
+        {:error, error}
     end
   end
 

@@ -104,6 +104,7 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok,
          %{
            body: %{
+             "status_code" => 200,
              "metadata" => %{
                "output" => %{
                  "1" => "stdout.log",
