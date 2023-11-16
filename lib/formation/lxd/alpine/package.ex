@@ -40,7 +40,7 @@ defmodule Formation.Lxd.Alpine.Package do
   end
 
   @spec upgrade(any, map) ::
-          {:error, binary} | {:ok, any}
+          {:error, binary | map} | {:ok, any}
   def upgrade(
         %Tesla.Client{} = client,
         %Instance{slug: slug, packages: packages, project: project}
