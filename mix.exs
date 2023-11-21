@@ -5,7 +5,7 @@ defmodule Formation.MixProject do
     [
       app: :formation,
       version: "0.12.5",
-      elixir: "~> 1.9",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
@@ -16,7 +16,8 @@ defmodule Formation.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Formation.Application, []}
     ]
   end
 
@@ -46,6 +47,8 @@ defmodule Formation.MixProject do
   defp deps do
     [
       {:lexdee, "~> 2.3"},
+      {:aws, "~> 0.13.0"},
+      {:finch, "~> 0.16.0"},
       {:postgrex, "~> 0.17.1"},
       {:ecto, "~> 3.10"},
       # {:dep_from_hexpm, "~> 0.3.0"},

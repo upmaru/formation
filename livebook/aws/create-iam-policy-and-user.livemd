@@ -1,0 +1,79 @@
+# Create IAM Policy and User
+
+## Setup Client
+
+```elixir
+access_key_id = System.get_env("LB_AWS_ACCESS_KEY_ID")
+secret_access_key = System.get_env("LB_AWS_SECRET_ACCESS_KEY")
+region = "us-east-1"
+```
+
+```elixir
+client = AWS.Client.create(access_key_id, secret_access_key, region)
+client = %{client | http_client: {AWS.HTTPClient.Finch, [finch_name: AWS.Finch]}}
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Create Policy
+
+```elixir
+policy_document = %{
+  "Version" => "2012-10-17",
+  "Statement" => [
+    %{
+      "Sid" => "Example123ABCDStorage",
+      "Effect" => "Allow",
+      "Action" => [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:DeleteObject",
+        "s3:PutObjectAcl"
+      ],
+      "Resource" => [
+        "arn:aws:s3:::example-public-1234abcd",
+        "arn:aws:s3:::example-public-1234abcd/*"
+      ]
+    }
+  ]
+}
+
+{:ok, policy, response} =
+  AWS.IAM.create_policy(client, %{
+    "PolicyName" => "Example123ABCDStorage",
+    "PolicyDocument" => Jason.encode!(policy_document)
+  })
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Create User and Attach Policy
+
+```elixir
+{:ok, user, response} =
+  AWS.IAM.create_user(client, %{
+    "Path" => "/",
+    "UserName" => "app-12345-abcd-4567",
+    "Tags" => %{
+      "member" => [
+        %{"Key" => "App", "Value" => "something"}
+      ]
+    }
+  })
+```
+
+```elixir
+{:ok, response, http} =
+  AWS.IAM.attach_user_policy(client, %{
+    "UserName" => user["CreateUserResponse"]["CreateUserResult"]["User"]["UserName"],
+    "PolicyArn" => "arn:aws:iam::230851414739:policy/Example123ABCDStorage"
+  })
+```
+
+```elixir
+{:ok, access_key, http} =
+  AWS.IAM.create_access_key(client, %{
+    "UserName" => user["CreateUserResponse"]["CreateUserResult"]["User"]["UserName"]
+  })
+```

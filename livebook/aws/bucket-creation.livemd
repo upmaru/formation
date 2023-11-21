@@ -1,0 +1,65 @@
+# Bucket creation
+
+## Setup Client
+
+Setup the client. In this case we're using `Finch` as the `http_client`
+
+```elixir
+access_key_id = System.get_env("LB_AWS_ACCESS_KEY_ID")
+secret_access_key = System.get_env("LB_AWS_SECRET_ACCESS_KEY")
+region = "us-east-1"
+```
+
+```elixir
+client = AWS.Client.create(access_key_id, secret_access_key, region)
+client = %{client | http_client: {AWS.HTTPClient.Finch, [finch_name: AWS.Finch]}}
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Create ACLs Disabled
+
+```elixir
+bucket_name = "example-abcd1234"
+
+{:ok, nil, response} = AWS.S3.create_bucket(client, bucket_name, %{})
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Create Bucket with ACLs
+
+```elixir
+bucket_name = "example-1234abcd"
+
+{:ok, nil, response} =
+  AWS.S3.create_bucket(client, bucket_name, %{
+    "ACL" => "private",
+    "ObjectOwnership" => "BucketOwnerPreferred"
+  })
+```
+
+<!-- livebook:{"branch_parent_index":0} -->
+
+## Create Public Bucket
+
+```elixir
+bucket_name = "example-public-1234abcd"
+
+{:ok, nil, response} =
+  AWS.S3.create_bucket(client, bucket_name, %{
+    "ObjectOwnership" => "BucketOwnerPreferred"
+  })
+
+{:ok, nil, response} =
+  AWS.S3.put_public_access_block(client, bucket_name, %{
+    "PublicAccessBlockConfiguration" => %{
+      "BlockPublicAcls" => false,
+      "IgnorePublicAcls" => false,
+      "BlockPublicPolicy" => true,
+      "RestrictPublicBuckets" => true
+    }
+  })
+```
+
+<!-- livebook:{"offset":1412,"stamp":{"token":"QTEyOEdDTQ.nft1DzSCaSGQi1T01At8v5hI5AZGIlnpN4mSPZ-y3_SuFagyrREvVVtdd4g.55KBA3QW4wxJc0qf.2d6ueU5bgfDq4KA9qaJRy0irAsUe2YK9HSWx8cIpUB_NGyNNGaIjjM0PMCVcBFUdvuXDzEYy_UUzkqUiM7Msq0CVJqVGzAku2W0WjS-E5w.JjuBmMhgfv0n8NiY6kdPDw","version":1}} -->
