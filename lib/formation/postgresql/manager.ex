@@ -3,7 +3,7 @@ defmodule Formation.Postgresql.Manager do
   alias Formation.Postgresql.Credential
 
   def create_user_and_database(
-        %Credential{hostname: host, port: port, username: username} = credential
+        %Credential{hostname: host, port: port, username: username} = credential, _options \\ []
       ) do
     {:ok, conn} =
       credential

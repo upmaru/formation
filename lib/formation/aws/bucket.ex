@@ -1,38 +1,26 @@
 defmodule Formation.Aws.Bucket do
-  defstruct [:name, :variant]
+  defstruct [:name, :acl]
 
-  def create(client, name, variant)
+  alias Formation.S3.Credential
 
-  def create(client, %{"name" => name, "variant" => "private" = variant}) do
-    AWS.S3.create_bucket(client, name, %{
-      "ObjectOwnership" => "BucketOwnerPreferred"
-    })
-    |> case do
-      {:ok, _, _} ->
-        {:ok, %__MODULE__{name: name, variant: variant}}
+  def create_credential_and_bucket(%Credential{
+    access_key_id: access_key_id, 
+    secret_access_key: secret_access_key,
+    region: region
+  }, options \\ []) do
+    permission = Keyword.get(options, :permission, "basic")
+    acl = Keyword.get(options, :acl, "private")
 
-      error ->
-        error
-    end
-  end
-
-  def create(client, %{"name" => name, "variant" => "public" = variant}) do
-    with {:ok, _, _} <-
-           AWS.S3.create_bucket(client, name, %{
-             "ObjectOwnership" => "BucketOwnerPreferred"
-           }),
-         {:ok, _, _} <-
-           AWS.S3.put_public_access_block(client, name, %{
-             "PublicAccessBlockConfiguration" => %{
-               "BlockPublicAcls" => false,
-               "IgnorePublicAcls" => false,
-               "BlockPublicPolicy" => true,
-               "RestrictPublicBuckets" => true
-             }
-           }) do
-      {:ok, %__MODULE__{name: name, variant: variant}}
+    name = if slug = Keyword.get(options, :slug) do
+      slug
     else
-      error -> error
+      Ecto.UUID.generate()
+      |> String.split("-")
+      |> List.first()
     end
+
+    client = Formation.Aws.client(access_key_id, secret_access_key, region)
+
+    with {:ok, %__MODULE__{} = bucket} <- __MODULE__.Manager.create(client, %{"name" => name, "acl" => acl})
   end
 end

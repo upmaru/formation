@@ -1,13 +1,12 @@
-defmodule Formation.Aws.Credential do
+defmodule Formation.Aws.Bucket.IAM.Manager do
+  alias Formation.Aws.Bucket
 
+  def create(client, bucket, params)
 
-  def create(client, params)
-
-  def create(client, %{
-        "installation_slug" => slug,
-        "bucket_name" => bucket_name,
-        "variant" => "base"
-      }) do
+  def create(client, %Bucket{} = bucket, %{
+    "instllation_slug" => slug,
+    "permission" => "basic"
+  }) do
     sid =
       slug
       |> String.replace("-", "_")
@@ -27,8 +26,8 @@ defmodule Formation.Aws.Credential do
             "s3:PutObjectAcl"
           ],
           "Resource" => [
-            "arn:aws:s3:::#{bucket_name}",
-            "arn:aws:s3:::#{bucket_name}/*"
+            "arn:aws:s3:::#{bucket.name}",
+            "arn:aws:s3:::#{bucket.name}/*"
           ]
         }
       ]
