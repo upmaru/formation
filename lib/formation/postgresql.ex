@@ -25,7 +25,7 @@ defmodule Formation.Postgresql do
 
   alias __MODULE__.Manager
 
-  defdelegate create_user_and_database(credential),
+  defdelegate create_user_and_database(credential, options \\ []),
     to: Manager
 
   alias __MODULE__.Credential
