@@ -3,6 +3,7 @@ defmodule Formation.S3.Credential do
   import Ecto.Changeset
 
   @valid_attrs ~w(
+    acl
     type
     region
     bucket
@@ -20,12 +21,14 @@ defmodule Formation.S3.Credential do
     field :region, :string
     field :access_key_id, :string
     field :secret_access_key, :string
+    field :acl, :string, default: "private"
   end
 
   def changeset(credential, params) do
     credential
     |> cast(params, @valid_attrs)
     |> validate_required([:type, :region, :access_key_id, :secret_access_key])
+    |> validate_inclusion(:acl, ["private", "public"])
     |> maybe_validate_bucket()
   end
 

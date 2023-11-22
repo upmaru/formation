@@ -41,6 +41,7 @@ defmodule Formation.Aws.IAM.Manager do
         endpoint: "s3.#{client.region}.amazonaws.com",
         bucket: bucket.name,
         region: client.region,
+        acl: bucket.acl,
         access_key_id:
           access_key_response["CreateAccessKeyResponse"]["CreateAccessKeyResult"]["AccessKey"][
             "AccessKeyId"
