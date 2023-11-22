@@ -4,13 +4,14 @@ defmodule Formation.S3.Credential do
 
   @valid_attrs ~w(
     type
-    endpoint
     region
+    bucket
+    endpoint
     access_key_id
     secret_access_key
-  )
+  )a
 
-  @pirmary_key false
+  @primary_key false
   embedded_schema do
     field :type, Ecto.Enum, values: [:component, :instance]
 
@@ -24,7 +25,7 @@ defmodule Formation.S3.Credential do
   def changeset(credential, params) do
     credential
     |> cast(params, @valid_attrs)
-    |> validate_required(@valid_attrs)
+    |> validate_required([:type, :region, :access_key_id, :secret_access_key])
     |> maybe_validate_bucket()
   end
 

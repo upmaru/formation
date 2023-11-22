@@ -3,9 +3,13 @@ defmodule Formation.Aws.Bucket.Manager do
 
   def create(client, params)
 
-  def create(client, %{"name" => name, "acl" => "private" = acl}) do
-    AWS.S3.create_bucket(client, name, %{
-      "ObjectOwnership" => "BucketOwnerPreferred"
+  def create(client, %{name: name, acl: "private" = acl}) do
+    client
+    |> AWS.S3.create_bucket(name, %{
+      "ObjectOwnership" => "BucketOwnerPreferred",
+      "CreateBucketConfiguration" => %{
+        "LocationConstraint" => client.region
+      }
     })
     |> case do
       {:ok, _, _} ->
@@ -16,10 +20,13 @@ defmodule Formation.Aws.Bucket.Manager do
     end
   end
 
-  def create(client, %{"name" => name, "acl" => "public" = acl}) do
+  def create(client, %{name: name, acl: "public" = acl}) do
     with {:ok, _, _} <-
            AWS.S3.create_bucket(client, name, %{
-             "ObjectOwnership" => "BucketOwnerPreferred"
+             "ObjectOwnership" => "BucketOwnerPreferred",
+             "CreateBucketConfiguration" => %{
+               "LocationConstraint" => client.region
+             }
            }),
          {:ok, _, _} <-
            AWS.S3.put_public_access_block(client, name, %{
@@ -30,7 +37,7 @@ defmodule Formation.Aws.Bucket.Manager do
                "RestrictPublicBuckets" => true
              }
            }) do
-      {:ok, %Bucket{name: name, variant: variant}}
+      {:ok, %Bucket{name: name, acl: acl}}
     else
       error -> error
     end
