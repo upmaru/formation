@@ -62,4 +62,4 @@ bucket_name = "example-public-1234abcd"
   })
 ```
 
-<!-- livebook:{"offset":1412,"stamp":{"token":"QTEyOEdDTQ.nft1DzSCaSGQi1T01At8v5hI5AZGIlnpN4mSPZ-y3_SuFagyrREvVVtdd4g.55KBA3QW4wxJc0qf.2d6ueU5bgfDq4KA9qaJRy0irAsUe2YK9HSWx8cIpUB_NGyNNGaIjjM0PMCVcBFUdvuXDzEYy_UUzkqUiM7Msq0CVJqVGzAku2W0WjS-E5w.JjuBmMhgfv0n8NiY6kdPDw","version":1}} -->
+<!-- livebook:{"offset":1412,"stamp":{"token":"QTEyOEdDTQ.Ta7x6jRcbmSQ-e90cnnMBnBcBnoCYGhZn0fs6eqAyNr6meb8y-pOP9yFz6w.Fz9RlWBY0rCiRLD8.79TgY8Q1jjI3PvU95ze1rTdNjmRkg7JWlzJx7sSye2wlk-Oa8KxM6VAgxB8dDmyBZmKUiW9Ln3LXJjceAJerH2AS2EQtavGgqdggB0J_jQ.HLvSWKh2Mh7lxWOJTa_ZaA","version":1}} -->

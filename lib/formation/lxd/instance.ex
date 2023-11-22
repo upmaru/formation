@@ -63,9 +63,7 @@ defmodule Formation.Lxd.Instance do
          {:ok, %{body: restart_operation}} <-
            lxd.restart_instance(client, instance.slug, query: [project: project]),
          {:ok, _restart_result} <-
-           lxd.wait_for_operation(client, restart_operation["id"],
-             query: [timeout: Lxd.timeout()]
-           ) do
+           lxd.wait_for_operation(client, restart_operation["id"], query: [timeout: Lxd.timeout()]) do
       {:ok, add_package_output}
     else
       {:error, %{body: %{"error" => error}}} ->

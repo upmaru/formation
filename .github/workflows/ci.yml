@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [master, develop]
+    branches: [master, develop, feature/**]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup elixir
         uses: erlef/setup-beam@v1
         with:
@@ -32,6 +32,8 @@ jobs:
       - name: Run Tests
         run: mix test
         env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           FORMATION_PG_HOST: localhost
           FORMATION_PG_USER: postgres
           FORMATION_PG_PASSWORD: postgres
