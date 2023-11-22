@@ -4,7 +4,7 @@ defmodule Formation.Aws.IAM.Policy do
   def build(id, resource, permission)
 
   def build(id, %Bucket{name: bucket_name}, "basic") do
-    id = 
+    id =
       id
       |> String.replace("-", "_")
       |> Macro.camelize()
