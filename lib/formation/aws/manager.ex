@@ -14,7 +14,7 @@ defmodule Formation.Aws.Manager do
     permission = Keyword.get(options, :permission, "basic")
     acl = Keyword.get(options, :acl, "private")
 
-    identifier = 
+    identifier =
       if id = Keyword.get(options, :id) do
         id
       else
@@ -30,7 +30,10 @@ defmodule Formation.Aws.Manager do
     with {:ok, %Bucket{} = bucket} <-
            Formation.Aws.create_bucket(client, %{name: name, acl: acl}),
          {:ok, %Credential{} = credential} <-
-           Formation.Aws.create_credential(client, bucket, %{id: identifier, permission: permission}) do
+           Formation.Aws.create_credential(client, bucket, %{
+             id: identifier,
+             permission: permission
+           }) do
       {:ok, credential}
     end
   end

@@ -30,7 +30,7 @@ defmodule Formation.PostgresqlTest do
           ssl: false
         })
 
-      assert {:ok, credential} = Postgresql.create_user_and_database(credential)
+      assert {:ok, credential} = Postgresql.create_user_and_database(credential, [])
 
       assert %Credential{} = credential
     end

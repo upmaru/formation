@@ -11,7 +11,7 @@ defmodule Formation.Aws do
     to: IAM.Manager,
     as: :create
 
-  defdelegate create_credential_and_bucket(credential, options),
+  defdelegate create_credential_and_bucket(credential, options \\ []),
     to: __MODULE__.Manager
 
   def client(access_key_id, secret_access_key, region, options \\ []) do
