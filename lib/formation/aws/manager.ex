@@ -13,6 +13,7 @@ defmodule Formation.Aws.Manager do
     finch = Keyword.get(options, :finch, AWS.Finch)
     permission = Keyword.get(options, :permission, "basic")
     acl = Keyword.get(options, :acl, "private")
+    cors = Keyword.get(options, :cors)
 
     identifier =
       if id = Keyword.get(options, :id) do
@@ -34,7 +35,18 @@ defmodule Formation.Aws.Manager do
              id: identifier,
              permission: permission
            }) do
-      {:ok, credential}
+      handle_update_cors(client, bucket, credential, %{cors: cors})
     end
   end
+
+  defp handle_update_cors(client, bucket, credential, %{cors: cors_params})
+       when is_binary(cors_params) do
+    with {:ok, cors_params} <- Jason.decode(cors_params),
+         {:ok, bucket} <-
+           Formation.Aws.update_bucket_cors(client, bucket, %{cors: cors_params}) do
+      Credential.update(credential, %{cors: bucket.cors})
+    end
+  end
+
+  defp handle_update_cors(client, bucket, credential, _params), do: {:ok, credential}
 end

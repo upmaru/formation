@@ -42,4 +42,41 @@ defmodule Formation.Aws.Bucket.Manager do
       error -> error
     end
   end
+
+  @tag_mappings %{
+    "AllowedHeaders" => "AllowedHeader",
+    "AllowedMethods" => "AllowedMethod",
+    "AllowedOrigins" => "AllowedOrigin",
+    "ExposeHeaders" => "ExposeHeader"
+  }
+
+  def update_cors(client, %Bucket{name: name} = bucket, %{cors: cors_parameters})
+      when is_list(cors_parameters) do
+    patched_cors_params =
+      Enum.map(cors_parameters, fn rule ->
+        Enum.map(rule, fn {k, v} ->
+          if k in Map.keys(@tag_mappings) do
+            key = Map.fetch!(@tag_mappings, k)
+
+            {key, v}
+          else
+            {k, v}
+          end
+        end)
+        |> Enum.into(%{})
+      end)
+
+    AWS.S3.put_bucket_cors(client, name, %{
+      "CORSConfiguration" => %{
+        "CORSRule" => patched_cors_params
+      }
+    })
+    |> case do
+      {:ok, _, _} ->
+        {:ok, %{bucket | cors: cors_parameters}}
+
+      error ->
+        error
+    end
+  end
 end

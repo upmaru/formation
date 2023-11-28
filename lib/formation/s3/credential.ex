@@ -8,6 +8,7 @@ defmodule Formation.S3.Credential do
     password
     resource
     acl
+    cors
     type
     region
     bucket
@@ -31,6 +32,7 @@ defmodule Formation.S3.Credential do
     field :access_key_id, :string
     field :secret_access_key, :string
     field :acl, :string, default: "private"
+    field :cors, {:array, :map}, default: []
   end
 
   def changeset(credential, params) do
@@ -47,6 +49,12 @@ defmodule Formation.S3.Credential do
 
   def create(params) do
     %__MODULE__{}
+    |> changeset(params)
+    |> apply_action(:insert)
+  end
+
+  def update(credential, params) do
+    credential
     |> changeset(params)
     |> apply_action(:insert)
   end
