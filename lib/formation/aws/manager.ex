@@ -48,5 +48,5 @@ defmodule Formation.Aws.Manager do
     end
   end
 
-  defp handle_update_cors(client, bucket, credential, _params), do: {:ok, credential}
+  defp handle_update_cors(_client, _bucket, credential, _params), do: {:ok, credential}
 end
