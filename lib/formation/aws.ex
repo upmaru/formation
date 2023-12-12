@@ -5,6 +5,10 @@ defmodule Formation.Aws do
     to: Bucket.Manager,
     as: :create
 
+  defdelegate update_bucket_cors(client, bucket, params),
+    to: Bucket.Manager,
+    as: :update_cors
+
   alias __MODULE__.IAM
 
   defdelegate create_credential(client, bucket, params),

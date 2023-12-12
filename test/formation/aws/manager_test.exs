@@ -43,4 +43,76 @@ defmodule Formation.Aws.ManagerTest do
                )
     end
   end
+
+  test "create_credential_and_bucket with cors", %{credential: credential, finch: finch} do
+    use_cassette "create_credential_and_bucket_with_cors", match_requests_on: [:request_body] do
+      assert {:ok, %Credential{cors: cors}} =
+               Formation.Aws.create_credential_and_bucket(
+                 credential,
+                 id: "test-cors",
+                 finch: finch,
+                 cors: """
+                  [
+                    {
+                      "AllowedHeaders": [
+                        "Content-Type",
+                        "Content-MD5",
+                        "Content-Disposition"
+                      ],
+                      "AllowedMethods": [
+                        "PUT"
+                      ],
+                      "AllowedOrigins": [
+                        "https://some-example.com"
+                      ],
+                      "MaxAgeSeconds": 3600
+                    }
+                 ]
+                 """
+               )
+
+      assert Enum.count(cors) == 1
+
+      [rule] = cors
+
+      assert %{
+               "AllowedHeaders" => _,
+               "AllowedMethods" => _,
+               "AllowedOrigins" => _,
+               "MaxAgeSeconds" => _
+             } = rule
+    end
+  end
+
+  test "return json error", %{credential: credential, finch: finch} do
+    use_cassette "create_credential_and_bucket_with_cors_json_error",
+      match_requests_on: [:request_body] do
+      assert {:error, error} =
+               Formation.Aws.create_credential_and_bucket(
+                 credential,
+                 id: "test-cors-error",
+                 finch: finch,
+                 cors: """
+                  [
+                    {
+                      "AllowedHeaders": [
+                        "Content-Type",
+                        "Content-MD5",
+                        "Content-Disposition
+                      ],
+                      "AllowedMethods": [
+                        "PUT"
+                      ]
+                      "AllowedOrigins": [
+                        "https://some-example.com"
+                      ],
+                      "MaxAgeSeconds": 3600
+                    }
+                 ]
+                 """
+               )
+
+      assert %Jason.DecodeError{} = error
+    end
+  end
 end
