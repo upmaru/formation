@@ -34,13 +34,13 @@ defmodule Formation.S3.CredentialTest do
     end
 
     test "can accept cors configuration", %{credential: credential} do
-      assert {:ok, %Credential{} = _credential} =
+      assert {:ok, %Credential{}} =
                Credential.update(credential, %{
                  cors: [
                    %{
-                     "AllowedHeaders" => ["*"],
                      "AllowedMethods" => ["GET", "PUT"],
                      "AllowedOrigins" => ["*"],
+                     "AllowedHeaders" => ["*"],
                      "MaxAgeSeconds" => 3000
                    }
                  ]

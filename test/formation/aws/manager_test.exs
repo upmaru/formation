@@ -115,4 +115,82 @@ defmodule Formation.Aws.ManagerTest do
       assert %Jason.DecodeError{} = error
     end
   end
+
+  describe "update" do
+    test "update_credential_and_bucket with cors", %{credential: credential, finch: finch} do
+      use_cassette "update_credential_and_bucket_with_cors", match_requests_on: [:request_body] do
+        {:ok, %Credential{} = creation_credential} =
+          Formation.Aws.create_credential_and_bucket(
+            credential,
+            id: "test-update-cors",
+            finch: finch,
+            cors: """
+             [
+               {
+                 "AllowedHeaders": [
+                   "Content-Type",
+                   "Content-MD5",
+                   "Content-Disposition"
+                 ],
+                 "AllowedMethods": [
+                   "PUT"
+                 ],
+                 "AllowedOrigins": [
+                   "https://some-example.com"
+                 ],
+                 "MaxAgeSeconds": 3600
+               }
+            ]
+            """
+          )
+
+        existing_params = %{
+          "credential" => %{
+            "type" => "instance",
+            "access_key_id" => creation_credential.access_key_id,
+            "secret_access_key" => creation_credential.secret_access_key,
+            "region" => creation_credential.region,
+            "bucket" => creation_credential.bucket,
+            "endpoint" => creation_credential.endpoint,
+            "acl" => creation_credential.acl,
+            "cors" => creation_credential.cors
+          }
+        }
+
+        assert {:ok, %Credential{cors: cors}} =
+                 Formation.Aws.update_credential_and_bucket(credential, existing_params,
+                   cors: """
+                    [
+                       {
+                         "AllowedHeaders": [
+                           "Content-Type",
+                           "Content-MD5",
+                           "Content-Disposition"
+                         ],
+                         "AllowedMethods": [
+                           "PUT"
+                         ],
+                         "AllowedOrigins": [
+                           "https://some-example.com",
+                           "https://another-example.com"
+                         ],
+                         "MaxAgeSeconds": 3600
+                       }
+                    ]
+                   """
+                 )
+
+        [rule] = cors
+
+        assert %{
+                 "AllowedHeaders" => _,
+                 "AllowedMethods" => _,
+                 "AllowedOrigins" => allowed_origins,
+                 "MaxAgeSeconds" => _
+               } = rule
+
+        assert Enum.count(allowed_origins) == 2
+      end
+    end
+  end
 end

@@ -18,6 +18,9 @@ defmodule Formation.Aws do
   defdelegate create_credential_and_bucket(credential, options \\ []),
     to: __MODULE__.Manager
 
+  defdelegate update_credential_and_bucket(credential, existing_params, options \\ []),
+    to: __MODULE__.Manager
+
   def client(access_key_id, secret_access_key, region, options \\ []) do
     finch_name = Keyword.get(options, :finch, AWS.Finch)
 
