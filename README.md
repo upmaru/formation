@@ -6,6 +6,8 @@ Current Support:
 
 + LXD
 + Alpine Linux
++ PostgreSQL
++ AWS Bucket
 
 ## Installation
 

@@ -7,6 +7,7 @@ defmodule Formation.LxdTest do
   setup :verify_on_exit!
 
   @uuid "some-operation-id"
+  @slug "some-instance-1"
   @instance_params %{
     "name" => "example-test-1",
     "profiles" => ["default", "example-1"],
@@ -52,7 +53,7 @@ defmodule Formation.LxdTest do
 
     test "call start instance and return client", %{client: client} do
       Formation.LexdeeMock
-      |> expect(:start_instance, fn _client, "example-test-1" ->
+      |> expect(:start_instance, fn _client, "example-test-1", _options ->
         {:ok, %{body: %{"id" => @uuid}}}
       end)
 
@@ -88,6 +89,72 @@ defmodule Formation.LxdTest do
       end)
 
       assert {:ok, %{}} == Lxd.execute(client, "example-test-1", cmd)
+    end
+  end
+
+  describe "execute_and_log" do
+    alias Formation.Lxd
+
+    test "call with error", %{client: client} do
+      cmd = """
+      cat /var/lib/something
+      """
+
+      Formation.LexdeeMock
+      |> expect(:execute_command, fn _client, "example-test-1", command, _options ->
+        assert cmd == command
+
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok,
+         %{
+           body: %{
+             "status_code" => 400,
+             "err" => "Failed to retrieve PID of executing child process"
+           }
+         }}
+      end)
+
+      assert {:error, _error} = Lxd.execute_and_log(client, "example-test-1", cmd)
+    end
+  end
+
+  describe "stop" do
+    alias Formation.Lxd
+
+    test "execute stop instance", %{client: client} do
+      Formation.LexdeeMock
+      |> expect(:stop_instance, fn _client, "some-instance-1", _options ->
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok, %{body: %{"err" => "", "status_code" => 200}}}
+      end)
+
+      assert {:ok, %{"err" => "", "status_code" => 200}} = Lxd.stop(client, @slug)
+    end
+  end
+
+  describe "delete" do
+    alias Formation.Lxd
+
+    test "execute delete instance", %{client: client} do
+      Formation.LexdeeMock
+      |> expect(:delete_instance, fn _client, _slug, _options ->
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok, %{body: %{}}}
+      end)
+
+      assert {:ok, %{}} = Lxd.delete(client, @slug)
     end
   end
 end

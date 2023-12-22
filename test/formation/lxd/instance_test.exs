@@ -18,15 +18,23 @@ defmodule Formation.Lxd.InstanceTest do
 
   @uuid "some-operation-id"
 
+  @key_name "key-name"
+  @repositories [
+    %{
+      url: "some-url",
+      public_key_name: @key_name,
+      public_key: "some-key"
+    }
+  ]
+
   setup do
     client = Lexdee.create_client("http://localhost:1234")
 
     instance =
       Instance.new(%{
         slug: "some-instance-1",
-        url: "some-url",
-        credential: %{"public_key" => "some-key"},
-        package: %{slug: "some-package-slug"}
+        repositories: @repositories,
+        packages: [%{slug: "some-package-slug"}]
       })
 
     {:ok, client: client, instance: instance}
@@ -35,24 +43,25 @@ defmodule Formation.Lxd.InstanceTest do
   describe "new" do
     test "create new instance" do
       assert %Instance{
-               repository: %Repository{},
-               package: %Package{}
+               repositories: [%Repository{}],
+               packages: [%Package{}]
              } =
                Instance.new(%{
                  slug: "some-instance-1",
-                 url: "some-url",
-                 credential: %{"public_key" => "some-key"},
-                 package: %{slug: "some-package-slug"}
+                 repositories: @repositories,
+                 packages: [%{slug: "some-package-slug"}]
                })
     end
   end
 
   describe "setup" do
-    test "execute setup command", %{client: client, instance: instance} do
+    setup do
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [settings: %{record_output: false}, query: [project: "default"]] == options
+
         assert """
-               echo 'some-key' > /etc/apk/keys/pakman.rsa.pub
+               echo 'some-key' > /etc/apk/keys/#{@key_name}.rsa.pub
                """ == command
 
         {:ok, %{body: %{"id" => @uuid}}}
@@ -64,9 +73,11 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command, _options ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [settings: %{record_output: false}, query: [project: "default"]] == options
+
         assert """
-               echo some-url >> /etc/apk/repositories
+               echo -e 'some-url' >> /etc/apk/repositories
                """ == command
 
         {:ok, %{body: %{"id" => @uuid}}}
@@ -78,7 +89,9 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [query: [project: "default"]] == options
+
         assert """
                cat /etc/apk/repositories
                """ == command
@@ -91,6 +104,7 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok,
          %{
            body: %{
+             "status_code" => 200,
              "metadata" => %{
                "output" => %{
                  "1" => "stdout.log",
@@ -102,17 +116,41 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: "some-url"}}
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: ""}}
       end)
 
+      :ok
+    end
+
+    test "execute setup command", %{client: client, instance: instance} do
+      assert {:ok, :repository_verified} = Instance.setup(client, instance)
+    end
+
+    test "execute setup using formation module", %{client: client, instance: instance} do
+      assert {:ok, :repository_verified} = Formation.setup_lxd_instance(client, instance)
+    end
+  end
+
+  describe "add package and restart" do
+    setup do
       Formation.LexdeeMock
-      |> expect(:execute_command, fn _client, "some-instance-1", command ->
+      |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
+        assert [query: [project: "default"]] == options
+
         assert """
                apk update && apk add some-package-slug
                """ == command
@@ -136,17 +174,27 @@ defmodule Formation.Lxd.InstanceTest do
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stdout.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: "some-package-log"}}
       end)
 
       Formation.LexdeeMock
-      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log" ->
+      |> expect(:show_instance_log, fn _client, "some-instance-1", "stderr.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
         {:ok, %{body: ""}}
       end)
 
       Formation.LexdeeMock
-      |> expect(:restart_instance, fn _client, "some-instance-1" ->
+      |> expect(:restart_instance, fn _client, "some-instance-1", options ->
+        assert [query: [project: "default"]] == options
+
         {:ok, %{body: %{}}}
       end)
 
@@ -155,39 +203,16 @@ defmodule Formation.Lxd.InstanceTest do
         {:ok, %{}}
       end)
 
-      assert {:ok, "some-package-log"} = Instance.setup(client, instance)
+      :ok
     end
-  end
 
-  describe "stop" do
-    test "execute stop instance", %{client: client, instance: instance} do
-      Formation.LexdeeMock
-      |> expect(:stop_instance, fn _client, "some-instance-1", _options ->
-        {:ok, %{body: %{"id" => @uuid}}}
-      end)
-
-      Formation.LexdeeMock
-      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
-        {:ok, %{body: %{"err" => "", "status_code" => 200}}}
-      end)
-
-      assert {:ok, %{"err" => "", "status_code" => 200}} = Instance.stop(client, instance)
+    test "successful execution", %{client: client, instance: instance} do
+      assert {:ok, "some-package-log"} = Instance.add_package_and_restart(client, instance)
     end
-  end
 
-  describe "delete" do
-    test "execute delete instance", %{client: client, instance: instance} do
-      Formation.LexdeeMock
-      |> expect(:delete_instance, fn _client, _slug ->
-        {:ok, %{body: %{"id" => @uuid}}}
-      end)
-
-      Formation.LexdeeMock
-      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
-        {:ok, %{body: %{}}}
-      end)
-
-      assert {:ok, %{}} = Instance.delete(client, instance)
+    test "successful execution with formation module", %{client: client, instance: instance} do
+      assert {:ok, "some-package-log"} =
+               Formation.add_package_and_restart_lxd_instance(client, instance)
     end
   end
 end

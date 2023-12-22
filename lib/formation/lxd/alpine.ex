@@ -2,6 +2,15 @@ defmodule Formation.Lxd.Alpine do
   alias Formation.Lxd.Alpine
 
   alias Alpine.Repository
+  alias Alpine.Postgresql
+
+  defdelegate provision_postgresql(client, options \\ []),
+    to: Postgresql,
+    as: :provision
+
+  defdelegate postgresql_connection_url(options \\ []),
+    to: Postgresql,
+    as: :connection_url
 
   defdelegate add_repository_public_key(client, instance),
     to: Repository,

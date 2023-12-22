@@ -1,6 +1,8 @@
 defmodule Formation.Lxd.Instance do
-  @enforce_keys [:slug, :repository, :package]
-  defstruct [:slug, :repository, :package]
+  @enforce_keys [:project, :slug, :repositories, :packages]
+  defstruct [:project, :slug, :repositories, :packages]
+
+  import Formation.Utilities
 
   alias Formation.Lxd
 
@@ -10,45 +12,58 @@ defmodule Formation.Lxd.Instance do
   }
 
   @type t :: %__MODULE__{
+          project: String.t(),
           slug: String.t(),
-          repository: Repository.t(),
-          package: Package.t()
+          repositories: list(Repository.t()),
+          packages: list(Package.t())
         }
 
   alias Formation.Lxd.Alpine
 
-  def new(%{
-        slug: slug,
-        url: url,
-        credential: %{"public_key" => public_key},
-        package: package
-      }) do
+  def new(
+        %{
+          slug: slug,
+          repositories: repositories,
+          packages: packages
+        } = params
+      ) do
     %__MODULE__{
+      project: Map.get(params, :project) || "default",
       slug: slug,
-      repository: %Repository{
-        url: url,
-        public_key: public_key
-      },
-      package: %Package{
-        slug: package.slug
-      }
+      repositories: Enum.map(repositories, &Repository.new/1),
+      packages: Enum.map(packages, &Package.new/1)
     }
   end
 
-  def setup(%Tesla.Client{} = client, %__MODULE__{} = instance) do
-    lxd = Lxd.impl()
+  def new(params) when is_map(params) do
+    params
+    |> atomize_keys()
+    |> new()
+  end
 
+  def setup(%Tesla.Client{} = client, %__MODULE__{} = instance) do
     with {:ok, _add_public_key_result} <-
            Alpine.add_repository_public_key(client, instance),
          {:ok, _append_result} <-
            Alpine.append_repository(client, instance),
-         {:ok, :repository_verified} <-
-           Alpine.verify_repository(client, instance),
-         {:ok, add_package_output} <- Alpine.add_package(client, instance),
+         {:ok, :repository_verified = output} <-
+           Alpine.verify_repository(client, instance) do
+      {:ok, output}
+    else
+      {:error, failed_output} ->
+        {:error, failed_output}
+    end
+  end
+
+  def add_package_and_restart(%Tesla.Client{} = client, %__MODULE__{project: project} = instance) do
+    lxd = Lxd.impl()
+
+    with {:ok, add_package_output} <-
+           Alpine.add_package(client, instance),
          {:ok, %{body: restart_operation}} <-
-           lxd.restart_instance(client, instance.slug),
+           lxd.restart_instance(client, instance.slug, query: [project: project]),
          {:ok, _restart_result} <-
-           lxd.wait_for_operation(client, restart_operation["id"], query: [timeout: 60]) do
+           lxd.wait_for_operation(client, restart_operation["id"], query: [timeout: Lxd.timeout()]) do
       {:ok, add_package_output}
     else
       {:error, %{body: %{"error" => error}}} ->
@@ -56,37 +71,6 @@ defmodule Formation.Lxd.Instance do
 
       {:error, failed_output} ->
         {:error, failed_output}
-    end
-  end
-
-  def stop(%Tesla.Client{} = client, %__MODULE__{slug: slug}) do
-    lxd = Lxd.impl()
-
-    with {:ok, %{body: operation}} <-
-           lxd.stop_instance(client, slug, force: true),
-         {:ok, %{body: %{"err" => "", "status_code" => 200} = body}} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
-      {:ok, body}
-    else
-      {:ok, %{body: %{"err" => "The instance is already stopped"}}} ->
-        {:ok, %{"err" => "", "status_code" => 200}}
-
-      _ ->
-        {:error, :instance_stop_failed}
-    end
-  end
-
-  def delete(%Tesla.Client{} = client, %__MODULE__{slug: slug}) do
-    lxd = Lxd.impl()
-
-    with {:ok, %{body: operation}} <-
-           lxd.delete_instance(client, slug),
-         {:ok, %{body: body}} <-
-           lxd.wait_for_operation(client, operation["id"], query: [timeout: 60]) do
-      {:ok, body}
-    else
-      _ ->
-        {:error, :instance_delete_failed}
     end
   end
 end
