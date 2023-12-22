@@ -10,6 +10,7 @@ defmodule Formation.Postgresql.Credential do
     username
     password
     database
+    certificate
     ssl
   )a
 
@@ -25,6 +26,8 @@ defmodule Formation.Postgresql.Credential do
     field :password, :string
     field :database, :string, default: "postgres"
     field :ssl, :boolean, default: true
+
+    field :certificate, :string
   end
 
   def changeset(credential, params) do
