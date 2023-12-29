@@ -3,7 +3,8 @@ defmodule Formation.Application do
 
   def start(_type, _args) do
     children = [
-      {Finch, name: AWS.Finch}
+      {Finch, name: AWS.Finch},
+      {Finch, name: Formation.Finch}
     ]
 
     opts = [strategy: :one_for_one, name: Formation.Supervisor]
