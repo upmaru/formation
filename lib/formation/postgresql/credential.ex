@@ -36,6 +36,7 @@ defmodule Formation.Postgresql.Credential do
     |> maybe_set_hostname()
     |> maybe_set_database()
     |> maybe_set_ssl()
+    |> maybe_parse_certificate()
     |> validate_required([:hostname, :port, :username, :database])
   end
 
@@ -54,6 +55,14 @@ defmodule Formation.Postgresql.Credential do
       userinfo: "#{credential.username}:#{credential.password}"
     }
     |> to_string()
+  end
+
+  defp maybe_parse_certificate(changeset) do
+    if certificate = get_change(changeset, :certificate) do
+      put_change(changeset, :certificate, parse_certificate(certificate))
+    else
+      changeset
+    end
   end
 
   defp maybe_set_ssl(changeset) do
@@ -77,6 +86,16 @@ defmodule Formation.Postgresql.Credential do
       put_change(changeset, :hostname, host)
     else
       changeset
+    end
+  end
+
+  defp parse_certificate(certificate) when is_binary(certificate) do
+    with {:ok, uri} <- URI.new(certificate),
+         {:ok, %{body: body}} <- Formation.Client.get(to_string(uri)) do
+      body
+    else
+      {:error, _} ->
+        certificate
     end
   end
 end
