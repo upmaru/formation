@@ -135,6 +135,9 @@ defmodule Formation.Lxd do
       {:ok, %{body: %{"status_code" => status_code} = error}} when status_code >= 400 ->
         {:error, error}
 
+      {:ok, _} ->
+        {:error, "failed to retrieve log output"}
+
       {:error, error} ->
         {:error, error}
     end
