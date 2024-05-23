@@ -152,7 +152,9 @@ defmodule Formation.Lxd do
     err_output
     |> String.split("\n")
     |> Enum.reject(fn err ->
-      err in ignored_errors
+      Enum.any?(ignored_errors, fn ignored_err ->
+        err =~ ignored_err
+      end)
     end)
   end
 

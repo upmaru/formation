@@ -13,7 +13,7 @@ defmodule Formation.Lxd.Alpine.Package do
 
   @ignored_errors [
     ~s(Run "rc-update add s6 default" to automatically start a s6 supervision tree on /run/service at boot time.),
-    ~s(* WARNING: {{slug}} is already stopped)
+    ~s(* WARNING: {{package}} is already stopped),
     ""
   ]
 
@@ -48,16 +48,28 @@ defmodule Formation.Lxd.Alpine.Package do
       ) do
     package_slugs = slugs(packages)
 
+    ignored_errors = process_errors(packages)
+
     command = """
     apk update && apk add --upgrade #{package_slugs}
     """
 
-    Lxd.execute_and_log(client, slug, command, ignored_errors: @ignored_errors, project: project)
+    Lxd.execute_and_log(client, slug, command, ignored_errors: ignored_errors, project: project)
   end
 
   defp slugs(packages) do
     packages
     |> Enum.map(fn package -> package.slug end)
     |> Enum.join(" ")
+  end
+
+  defp process_errors(packages) do
+    @ignored_errors
+    |> Enum.flat_map(fn error ->
+      Enum.map(packages, fn package ->
+        Mustache.render(error, %{package: package.slug})
+      end)
+    end)
+    |> Enum.uniq()
   end
 end
