@@ -13,6 +13,7 @@ defmodule Formation.Lxd.Alpine.Package do
 
   @ignored_errors [
     ~s(Run "rc-update add s6 default" to automatically start a s6 supervision tree on /run/service at boot time.),
+    ~s(* WARNING: {{slug}} is already stopped)
     ""
   ]
 
