@@ -100,6 +100,8 @@ defmodule Formation.LxdTest do
       cat /var/lib/something
       """
 
+      error_text = "Failed to retrieve PID of executing child process"
+
       Formation.LexdeeMock
       |> expect(:execute_command, fn _client, "example-test-1", command, _options ->
         assert cmd == command
@@ -113,12 +115,117 @@ defmodule Formation.LxdTest do
          %{
            body: %{
              "status_code" => 400,
-             "err" => "Failed to retrieve PID of executing child process"
+             "err" => error_text
            }
          }}
       end)
 
-      assert {:error, _error} = Lxd.execute_and_log(client, "example-test-1", cmd)
+      assert {:error, error} = Lxd.execute_and_log(client, "example-test-1", cmd)
+      assert %{"err" => ^error_text} = error
+    end
+
+    test "ignored error", %{client: client} do
+      cmd = """
+      cat /var/lib/something
+      """
+
+      Formation.LexdeeMock
+      |> expect(:execute_command, fn _client, "example-test-1", command, _options ->
+        assert cmd == command
+
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok,
+         %{
+           body: %{
+             "status_code" => 200,
+             "metadata" => %{
+               "output" => %{
+                 "1" => "stdout.log",
+                 "2" => "stderr.log"
+               }
+             }
+           }
+         }}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:show_instance_log, fn _client, "example-test-1", "stdout.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
+        {:ok, %{body: "some-url"}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:show_instance_log, fn _client, "example-test-1", "stderr.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
+        {:ok, %{body: " * WARNING: some-package is already stopped"}}
+      end)
+
+      assert {:ok, "some-url"} =
+               Lxd.execute_and_log(client, "example-test-1", cmd,
+                 ignored_errors: ["* WARNING: some-package is already stopped"]
+               )
+    end
+
+    test "error not ignored", %{client: client} do
+      cmd = """
+      cat /var/lib/something
+      """
+
+      Formation.LexdeeMock
+      |> expect(:execute_command, fn _client, "example-test-1", command, _options ->
+        assert cmd == command
+
+        {:ok, %{body: %{"id" => @uuid}}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:wait_for_operation, fn _client, _uuid, _options ->
+        {:ok,
+         %{
+           body: %{
+             "status_code" => 200,
+             "metadata" => %{
+               "output" => %{
+                 "1" => "stdout.log",
+                 "2" => "stderr.log"
+               }
+             }
+           }
+         }}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:show_instance_log, fn _client, "example-test-1", "stdout.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
+        {:ok, %{body: "some-url"}}
+      end)
+
+      Formation.LexdeeMock
+      |> expect(:show_instance_log, fn _client, "example-test-1", "stderr.log", options ->
+        assert [query: [project: project]] = options
+
+        assert project == "default"
+
+        {:ok, %{body: "Some error happened"}}
+      end)
+
+      assert {:error, "Some error happened"} =
+               Lxd.execute_and_log(client, "example-test-1", cmd,
+                 ignored_errors: ["* WARNING: some-package is already stopped"]
+               )
     end
   end
 
