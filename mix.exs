@@ -54,7 +54,7 @@ defmodule Formation.MixProject do
     [
       {:lexdee, "~> 2.3"},
       {:aws, "~> 0.13.0"},
-      {:finch, "~> 0.16.0"},
+      {:finch, "~> 0.18.0"},
       {:tesla, "~> 1.7.0"},
       {:postgrex, "~> 0.17.1"},
       {:ecto, "~> 3.10"},
