@@ -116,7 +116,7 @@ defmodule Formation.Lxd do
              Path.basename(stdout),
              query: [project: project]
            ),
-         {:ok, %{body: err_output}} =
+         {:ok, %{body: err_output}} <-
            client
            |> lxd.show_instance_log(
              slug,
