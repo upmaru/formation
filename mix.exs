@@ -5,7 +5,7 @@ defmodule Formation.MixProject do
     [
       app: :formation,
       version: "0.15.2",
-      elixir: "~> 1.13",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
