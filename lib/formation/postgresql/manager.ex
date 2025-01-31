@@ -35,8 +35,7 @@ defmodule Formation.Postgresql.Manager do
          {:ok, %Postgrex.Result{}} <- Postgresql.create_database(conn, new_database, new_user),
          {:ok, new_db_conn} <-
            %{credential | database: new_database}
-           |> Map.from_struct()
-           |> Keyword.new()
+           |> build_connection_options()
            |> Postgrex.start_link(),
          {:ok, %Postgrex.Result{}} <- Postgresql.grant_public_schema(new_db_conn, new_user),
          {:ok, credential} <-
