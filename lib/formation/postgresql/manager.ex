@@ -6,11 +6,9 @@ defmodule Formation.Postgresql.Manager do
         %Credential{hostname: host, port: port, username: username} = credential,
         _options \\ []
       ) do
-    {:ok, conn} =
-      credential
-      |> Map.from_struct()
-      |> Keyword.new()
-      |> Postgrex.start_link()
+    connection_options = build_connection_options(credential)
+
+    {:ok, conn} = Postgrex.start_link(connection_options)
 
     uuid = Ecto.UUID.generate()
 
@@ -54,5 +52,32 @@ defmodule Formation.Postgresql.Manager do
 
       {:ok, credential}
     end
+  end
+
+  def build_connection_options(%Credential{ssl: true, certificate: certificate} = credential)
+      when is_binary(certificate) do
+    credential_options =
+      credential
+      |> Map.from_struct()
+      |> Keyword.new()
+
+    credential_options
+    |> Keyword.put(:ssl_opts,
+      verify: :verify_peer,
+      cacerts:
+        credential.certificate
+        |> :public_key.pem_decode()
+        |> Enum.map(fn {_, der, _} -> der end),
+      server_name_indication: to_charlist(credential.hostname),
+      customize_hostname_check: [
+        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+      ]
+    )
+  end
+
+  def build_connection_options(%Credential{} = credential) do
+    credential
+    |> Map.from_struct()
+    |> Keyword.new()
   end
 end
