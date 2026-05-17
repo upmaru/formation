@@ -29,7 +29,7 @@ defmodule Formation.Lxd.AlpineTest do
       |> expect(:execute_command, fn _client, "some-instance-1", command, options ->
         assert [query: [project: "default"]] == options
 
-        assert "apk update && apk add --upgrade some-package-slug\n" == command
+        assert "apk add --no-cache --upgrade some-package-slug\n" == command
 
         {:ok, %{body: %{"id" => @uuid}}}
       end)
