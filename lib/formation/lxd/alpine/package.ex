@@ -51,7 +51,7 @@ defmodule Formation.Lxd.Alpine.Package do
     ignored_errors = process_errors(packages)
 
     command = """
-    apk update && apk add --upgrade #{package_slugs}
+    apk add --no-cache --upgrade #{package_slugs}
     """
 
     Lxd.execute_and_log(client, slug, command, ignored_errors: ignored_errors, project: project)
